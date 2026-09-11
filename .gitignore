@@ -1,6 +1,26 @@
-my_venv
-.env
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+my_venv/
+venv/
+
+# Django
 db.sqlite3
-__pycache__
-.pyc
-media
+media/
+staticfiles/
+
+# Ambiente
+.env
+.env.local
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+
+# Editores / SO
+.DS_Store
+.idea/
+.vscode/
