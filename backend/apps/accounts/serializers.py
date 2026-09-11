@@ -65,6 +65,8 @@ class LoginSerializer(serializers.Serializer):
     default_error_message = 'E-mail ou senha inválidos.'
 
     def validate(self, attrs):
+        # authenticate() já recusa contas desativadas; a mensagem é a mesma de
+        # senha errada, para não revelar quais e-mails existem.
         user = authenticate(
             request=self.context.get('request'),
             username=attrs['email'].lower().strip(),
@@ -72,8 +74,6 @@ class LoginSerializer(serializers.Serializer):
         )
         if user is None:
             raise serializers.ValidationError({'detail': self.default_error_message})
-        if not user.is_active:
-            raise serializers.ValidationError({'detail': 'Esta conta está desativada.'})
         attrs['user'] = user
         return attrs
 

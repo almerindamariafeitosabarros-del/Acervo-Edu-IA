@@ -68,3 +68,15 @@ optamos sempre pela solução mais simples que atende ao requisito.
   selects encadeados e listas curtas.
 - **Permissões validadas sempre no backend.** O frontend esconde botões apenas por
   conforto: cada ação é verificada de novo na API.
+
+## Ajustes durante a validação
+
+- **`page_size` na query string** (`PaginacaoPadrao`, máximo de 100). Sem isso, a tela do
+  Assistente e a lista de usuários da Administração ficariam presas nos 12 primeiros
+  registros, já que o DRF ignora o parâmetro por padrão.
+- **`FRONTEND_ORIGIN` aceita várias origens** separadas por vírgula. `localhost:5173` e
+  `127.0.0.1:5173` são endereços diferentes para o CORS, e trocar um pelo outro no
+  navegador bloqueava as chamadas.
+- **Conta desativada recebe a mesma mensagem de senha errada.** O `authenticate()` do
+  Django já recusa contas inativas, e repetir a mensagem genérica evita revelar quais
+  e-mails existem.

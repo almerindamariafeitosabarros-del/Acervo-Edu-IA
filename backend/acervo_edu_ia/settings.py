@@ -153,7 +153,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'acervo_edu_ia.pagination.PaginacaoPadrao',
     'PAGE_SIZE': 12,
 }
 

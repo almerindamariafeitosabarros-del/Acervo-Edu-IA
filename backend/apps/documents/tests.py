@@ -225,3 +225,23 @@ class PublicationTests(DocumentTestBase):
 
         vazio = self.client.get('/api/documents/public/?category=9999')
         self.assertEqual(vazio.data['count'], 0)
+
+
+class PaginationTests(DocumentTestBase):
+    def test_pagina_padrao_e_tamanho_ajustavel(self):
+        for indice in range(15):
+            self.criar_documento(
+                owner=self.professor, visibility=Visibility.PUBLIC, title=f'Material {indice}'
+            )
+        self.client.force_authenticate(self.aluno)
+
+        padrao = self.client.get('/api/documents/public/')
+        self.assertEqual(padrao.data['count'], 15)
+        self.assertEqual(len(padrao.data['results']), 12)
+
+        segunda = self.client.get('/api/documents/public/?page=2')
+        self.assertEqual(len(segunda.data['results']), 3)
+
+        # A tela do assistente pede uma página maior para montar o seletor.
+        maior = self.client.get('/api/documents/public/?page_size=100')
+        self.assertEqual(len(maior.data['results']), 15)

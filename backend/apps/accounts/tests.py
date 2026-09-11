@@ -46,6 +46,18 @@ class AuthTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('E-mail ou senha inválidos.', str(response.data))
 
+    def test_conta_desativada_nao_entra(self):
+        User.objects.create_user(
+            email='inativo@exemplo.com', password='senhaSegura123', name='Inativo', is_active=False
+        )
+        response = self.client.post(
+            reverse('auth-login'),
+            {'email': 'inativo@exemplo.com', 'password': 'senhaSegura123'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('E-mail ou senha inválidos.', str(response.data))
+
     def test_me_sem_login_retorna_401(self):
         response = self.client.get(reverse('auth-me'))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -26,7 +26,9 @@ const criando = ref(false)
 async function carregar() {
   carregando.value = true
   try {
-    const { data } = await api.get('/users/', { params: busca.value ? { search: busca.value } : {} })
+    const params = { page_size: 100 }
+    if (busca.value) params.search = busca.value
+    const { data } = await api.get('/users/', { params })
     usuarios.value = data.results || data
   } catch (error) {
     erro.value = mensagemDeErro(error, 'Não foi possível carregar os usuários.')
