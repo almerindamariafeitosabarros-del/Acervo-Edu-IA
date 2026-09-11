@@ -1,0 +1,274 @@
+:root {
+  --cor-fundo: #f4f6fb;
+  --cor-superficie: #ffffff;
+  --cor-borda: #dfe4ee;
+  --cor-texto: #1f2a3d;
+  --cor-texto-suave: #64748b;
+  --cor-primaria: #1d4ed8;
+  --cor-primaria-escura: #1e40af;
+  --cor-primaria-clara: #eaf0ff;
+  --cor-sucesso: #15803d;
+  --cor-sucesso-clara: #e7f6ec;
+  --cor-alerta: #b45309;
+  --cor-alerta-clara: #fdf2e0;
+  --cor-erro: #b91c1c;
+  --cor-erro-clara: #fdecec;
+  --raio: 10px;
+  --sombra: 0 1px 3px rgba(20, 33, 61, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4 {
+  margin: 0 0 0.5rem;
+  line-height: 1.25;
+}
+
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+
+a {
+  color: var(--cor-primaria);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------- Formulários */
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  color: var(--cor-texto);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  font: inherit;
+  background: #fff;
+  color: var(--cor-texto);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--cor-primaria-clara);
+  border-color: var(--cor-primaria);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: #f1f3f8;
+  color: var(--cor-texto-suave);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.campo {
+  margin-bottom: 1rem;
+}
+
+.campo-ajuda {
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+  margin-top: 0.25rem;
+}
+
+.linha-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0 1rem;
+}
+
+/* -------------------------------------------------------------------- Botões */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--raio);
+  background: var(--cor-primaria);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.botao:hover:not(:disabled) {
+  background: var(--cor-primaria-escura);
+  text-decoration: none;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.botao-secundario {
+  background: #fff;
+  color: var(--cor-primaria);
+  border-color: var(--cor-borda);
+}
+
+.botao-secundario:hover:not(:disabled) {
+  background: var(--cor-primaria-clara);
+}
+
+.botao-perigo {
+  background: var(--cor-erro);
+}
+
+.botao-perigo:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.botao-pequeno {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+/* ------------------------------------------------------------------- Cartões */
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1.25rem;
+  box-shadow: var(--sombra);
+}
+
+.grade-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+}
+
+/* --------------------------------------------------------------------- Selos */
+.selo {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.selo-publico {
+  background: var(--cor-sucesso-clara);
+  color: var(--cor-sucesso);
+}
+
+.selo-privado {
+  background: var(--cor-alerta-clara);
+  color: var(--cor-alerta);
+}
+
+.selo-neutro {
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-escura);
+}
+
+/* ------------------------------------------------------------------ Mensagens */
+.mensagem {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--raio);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.mensagem-erro {
+  background: var(--cor-erro-clara);
+  color: var(--cor-erro);
+}
+
+.mensagem-sucesso {
+  background: var(--cor-sucesso-clara);
+  color: var(--cor-sucesso);
+}
+
+.mensagem-aviso {
+  background: var(--cor-alerta-clara);
+  color: var(--cor-alerta);
+}
+
+.texto-suave {
+  color: var(--cor-texto-suave);
+}
+
+.vazio {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--cor-texto-suave);
+}
+
+/* ------------------------------------------------------------------- Tabelas */
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabela th,
+.tabela td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--cor-borda);
+  vertical-align: middle;
+}
+
+.tabela th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--cor-texto-suave);
+}
+
+.rolagem-horizontal {
+  overflow-x: auto;
+}
+
+/* ------------------------------------------------------------------ Utilidades */
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.entre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
