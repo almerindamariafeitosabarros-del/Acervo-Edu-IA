@@ -79,8 +79,8 @@ onMounted(carregar)
 
 <template>
   <div class="pilha">
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
-    <p v-if="aviso" class="mensagem mensagem-sucesso">{{ aviso }}</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+    <p v-if="aviso" class="mensagem mensagem-sucesso" role="status">{{ aviso }}</p>
 
     <section class="cartao">
       <h2>Novo usuário</h2>
@@ -104,8 +104,8 @@ onMounted(carregar)
           <input id="u-senha" v-model="novo.password" type="text" minlength="8" required />
         </div>
         <div class="campo">
-          <label>&nbsp;</label>
-          <button class="botao" type="submit" :disabled="criando">Criar</button>
+          <span class="rotulo-vazio" aria-hidden="true"></span>
+          <button class="botao" type="submit" :disabled="criando">Criar usuário</button>
         </div>
       </form>
     </section>
@@ -114,13 +114,22 @@ onMounted(carregar)
       <div class="entre cabecalho">
         <h2>Usuários</h2>
         <form @submit.prevent="carregar">
-          <input v-model.trim="busca" type="search" placeholder="Buscar por nome ou e-mail" />
+          <label for="busca-usuarios" class="apenas-leitor-de-tela">Buscar usuários</label>
+          <input
+            id="busca-usuarios"
+            v-model.trim="busca"
+            type="search"
+            placeholder="Buscar por nome ou e-mail"
+          />
         </form>
       </div>
 
       <p v-if="carregando" class="texto-suave">Carregando…</p>
       <div v-else class="rolagem-horizontal">
         <table class="tabela">
+          <caption class="apenas-leitor-de-tela">
+            Usuários cadastrados, com perfil e situação da conta
+          </caption>
           <thead>
             <tr>
               <th>Nome</th>
@@ -139,6 +148,7 @@ onMounted(carregar)
                 <select
                   :value="usuario.role"
                   :disabled="usuario.id === auth.user?.id"
+                  :aria-label="`Perfil de ${usuario.name}`"
                   @change="alterarPerfil(usuario, $event.target.value)"
                 >
                   <option v-for="p in perfis" :key="p.valor" :value="p.valor">{{ p.rotulo }}</option>
@@ -158,6 +168,7 @@ onMounted(carregar)
                     @click="alternarAtivo(usuario)"
                   >
                     {{ usuario.is_active ? 'Desativar' : 'Ativar' }}
+                    <span class="apenas-leitor-de-tela">{{ usuario.name }}</span>
                   </button>
                 </div>
               </td>

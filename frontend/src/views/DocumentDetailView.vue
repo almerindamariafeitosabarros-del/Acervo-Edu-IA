@@ -106,8 +106,8 @@ onUnmounted(() => {
 
 <template>
   <div class="pilha">
-    <p v-if="carregando" class="texto-suave">Carregando…</p>
-    <p v-else-if="erro && !documento" class="mensagem mensagem-erro">{{ erro }}</p>
+    <p v-if="carregando" class="texto-suave" role="status">Carregando…</p>
+    <p v-else-if="erro && !documento" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
 
     <template v-else-if="documento">
       <header class="entre">
@@ -125,8 +125,8 @@ onUnmounted(() => {
         </span>
       </header>
 
-      <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
-      <p v-if="aviso" class="mensagem mensagem-sucesso">{{ aviso }}</p>
+      <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+      <p v-if="aviso" class="mensagem mensagem-sucesso" role="status">{{ aviso }}</p>
 
       <div class="acoes">
         <button class="botao" type="button" :disabled="carregandoArquivo" @click="baixar">

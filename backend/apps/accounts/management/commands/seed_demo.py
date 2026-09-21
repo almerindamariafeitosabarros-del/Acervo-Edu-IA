@@ -118,10 +118,13 @@ class Command(BaseCommand):
                     role=perfil,
                     institution=instituicao_padrao,
                 )
+                usuario.register_consent()
+                campos = ['accepted_terms_at', 'accepted_terms_version']
                 if perfil == Role.ADMIN:
                     usuario.is_staff = True
                     usuario.is_superuser = True
-                    usuario.save(update_fields=['is_staff', 'is_superuser'])
+                    campos += ['is_staff', 'is_superuser']
+                usuario.save(update_fields=campos)
             usuarios[perfil] = usuario
 
         professor = usuarios[Role.TEACHER]

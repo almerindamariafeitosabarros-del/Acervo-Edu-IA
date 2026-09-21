@@ -1,15 +1,20 @@
 from django.db.models import Count
+from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import User
+from .models import TERMS_VERSION, User
 from .permissions import IsAdmin
+from .privacy import delete_user_account, export_user_data
 from .serializers import (
+    AccountDeletionSerializer,
     AdminUserSerializer,
     ChangePasswordSerializer,
+    ConsentSerializer,
     LoginSerializer,
     ProfileUpdateSerializer,
     RegisterSerializer,
@@ -64,6 +69,62 @@ class ChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'detail': 'Senha alterada com sucesso.'})
+
+
+class ExportMyDataView(APIView):
+    """GET /api/auth/me/export/ — baixa todos os dados do titular em JSON.
+
+    Atende ao direito de acesso e de portabilidade (LGPD, art. 18, II e V).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        dados = export_user_data(request.user)
+        dados['gerado_em'] = timezone.now().isoformat()
+        resposta = JsonResponse(dados, json_dumps_params={'ensure_ascii': False, 'indent': 2})
+        nome_arquivo = f'meus-dados-acervo-edu-ia-{timezone.now():%Y-%m-%d}.json'
+        resposta['Content-Disposition'] = f'attachment; filename="{nome_arquivo}"'
+        return resposta
+
+
+class DeleteMyAccountView(APIView):
+    """POST /api/auth/me/delete/ — elimina a conta e todos os dados (art. 18, VI)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = AccountDeletionSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        resumo = delete_user_account(request.user)
+        return Response(
+            {
+                'detail': 'Sua conta e seus dados foram excluídos definitivamente.',
+                **resumo,
+            }
+        )
+
+
+class ConsentView(APIView):
+    """Informa a versão vigente dos termos e registra um novo aceite."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(
+            {
+                'version': TERMS_VERSION,
+                'accepted': request.user.terms_accepted,
+                'accepted_at': request.user.accepted_terms_at,
+                'accepted_version': request.user.accepted_terms_version or None,
+            }
+        )
+
+    def post(self, request):
+        serializer = ConsentSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserSerializer(request.user).data)
 
 
 class UserViewSet(viewsets.ModelViewSet):

@@ -52,16 +52,17 @@ onMounted(async () => {
 <template>
   <div class="pilha">
     <header>
-      <h1>Olá, {{ auth.user?.name?.split(' ')[0] }}! 👋</h1>
+      <h1>Olá, {{ auth.user?.name?.split(' ')[0] }}! <span aria-hidden="true">👋</span></h1>
       <p class="texto-suave">
         Você está no perfil <strong>{{ auth.perfilTexto }}</strong
         >.
       </p>
     </header>
 
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
 
-    <section v-if="contadores" class="contadores">
+    <section v-if="contadores" class="contadores" aria-labelledby="titulo-contadores">
+      <h2 id="titulo-contadores" class="apenas-leitor-de-tela">Resumo da sua conta</h2>
       <div class="cartao contador">
         <span class="numero">{{ contadores.my_documents }}</span>
         <span class="texto-suave">Meus documentos</span>
@@ -86,25 +87,28 @@ onMounted(async () => {
       </template>
     </section>
 
-    <section class="grade-cartoes">
-      <RouterLink
-        v-for="atalho in atalhos"
-        :key="atalho.nome"
-        :to="{ name: atalho.nome }"
-        class="cartao atalho"
-      >
-        <span class="icone" aria-hidden="true">{{ atalho.icone }}</span>
-        <h3>{{ atalho.titulo }}</h3>
-        <p class="texto-suave">{{ atalho.texto }}</p>
-      </RouterLink>
+    <section aria-labelledby="titulo-atalhos">
+      <h2 id="titulo-atalhos" class="apenas-leitor-de-tela">Atalhos</h2>
+      <div class="grade-cartoes">
+        <RouterLink
+          v-for="atalho in atalhos"
+          :key="atalho.nome"
+          :to="{ name: atalho.nome }"
+          class="cartao atalho"
+        >
+          <span class="icone" aria-hidden="true">{{ atalho.icone }}</span>
+          <h3>{{ atalho.titulo }}</h3>
+          <p class="texto-suave">{{ atalho.texto }}</p>
+        </RouterLink>
+      </div>
     </section>
 
-    <section>
+    <section aria-labelledby="titulo-recentes">
       <div class="entre">
-        <h2>Últimos publicados</h2>
+        <h2 id="titulo-recentes">Últimos publicados</h2>
         <RouterLink :to="{ name: 'acervo' }">Ver todo o acervo →</RouterLink>
       </div>
-      <p v-if="carregando" class="texto-suave">Carregando…</p>
+      <p v-if="carregando" class="texto-suave" role="status">Carregando…</p>
       <p v-else-if="!recentes.length" class="vazio">Ainda não há documentos publicados.</p>
       <div v-else class="grade-cartoes">
         <DocumentCard v-for="documento in recentes" :key="documento.id" :documento="documento" />

@@ -82,8 +82,8 @@ onMounted(async () => {
 
 <template>
   <div class="pilha">
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
-    <p v-if="aviso" class="mensagem mensagem-sucesso">{{ aviso }}</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+    <p v-if="aviso" class="mensagem mensagem-sucesso" role="status">{{ aviso }}</p>
 
     <form class="cartao linha-campos" @submit.prevent="buscar">
       <div class="campo">
@@ -113,7 +113,7 @@ onMounted(async () => {
         </select>
       </div>
       <div class="campo">
-        <label>&nbsp;</label>
+        <span class="rotulo-vazio" aria-hidden="true"></span>
         <button class="botao" type="submit">Buscar</button>
       </div>
     </form>
@@ -124,6 +124,9 @@ onMounted(async () => {
       </p>
       <div class="rolagem-horizontal">
         <table class="tabela">
+          <caption class="apenas-leitor-de-tela">
+            Todos os documentos da plataforma, para moderação
+          </caption>
           <thead>
             <tr>
               <th>Título</th>

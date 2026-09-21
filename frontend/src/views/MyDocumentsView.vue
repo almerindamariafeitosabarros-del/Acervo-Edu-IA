@@ -93,8 +93,8 @@ onMounted(carregar)
       <RouterLink class="botao" :to="{ name: 'documento-novo' }">+ Novo documento</RouterLink>
     </header>
 
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
-    <p v-if="aviso" class="mensagem mensagem-sucesso">{{ aviso }}</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+    <p v-if="aviso" class="mensagem mensagem-sucesso" role="status">{{ aviso }}</p>
 
     <form class="cartao filtros" @submit.prevent="buscar">
       <div class="campo sem-margem">
@@ -112,7 +112,7 @@ onMounted(carregar)
       <button class="botao" type="submit">Buscar</button>
     </form>
 
-    <p v-if="carregando" class="texto-suave">Carregando…</p>
+    <p v-if="carregando" class="texto-suave" role="status">Carregando…</p>
     <p v-else-if="!documentos.length" class="vazio">
       Você ainda não cadastrou documentos.
       <RouterLink :to="{ name: 'documento-novo' }">Cadastre o primeiro</RouterLink>.
@@ -120,6 +120,9 @@ onMounted(carregar)
 
     <div v-else class="cartao rolagem-horizontal">
       <table class="tabela">
+        <caption class="apenas-leitor-de-tela">
+          Seus documentos, com situação de publicação e ações disponíveis
+        </caption>
         <thead>
           <tr>
             <th>Título</th>
@@ -132,11 +135,11 @@ onMounted(carregar)
         </thead>
         <tbody>
           <tr v-for="documento in documentos" :key="documento.id">
-            <td>
+            <th scope="row" class="celula-titulo">
               <RouterLink :to="{ name: 'documento-detalhes', params: { id: documento.id } }">
                 {{ documento.title }}
               </RouterLink>
-            </td>
+            </th>
             <td class="texto-suave">{{ documento.subject_name || '—' }}</td>
             <td>
               <span
@@ -154,7 +157,7 @@ onMounted(carregar)
                   class="botao botao-secundario botao-pequeno"
                   :to="{ name: 'documento-editar', params: { id: documento.id } }"
                 >
-                  Editar
+                  Editar<span class="apenas-leitor-de-tela"> {{ documento.title }}</span>
                 </RouterLink>
                 <button
                   v-if="auth.podePublicar"
@@ -163,20 +166,21 @@ onMounted(carregar)
                   @click="alternarPublicacao(documento)"
                 >
                   {{ documento.visibility === 'public' ? 'Despublicar' : 'Publicar' }}
+                  <span class="apenas-leitor-de-tela">{{ documento.title }}</span>
                 </button>
                 <button
                   type="button"
                   class="botao botao-secundario botao-pequeno"
                   @click="perguntarIA(documento)"
                 >
-                  Perguntar à IA
+                  Perguntar à IA<span class="apenas-leitor-de-tela"> sobre {{ documento.title }}</span>
                 </button>
                 <button
                   type="button"
                   class="botao botao-perigo botao-pequeno"
                   @click="excluir(documento)"
                 >
-                  Excluir
+                  Excluir<span class="apenas-leitor-de-tela"> {{ documento.title }}</span>
                 </button>
               </div>
             </td>
@@ -190,6 +194,14 @@ onMounted(carregar)
 </template>
 
 <style scoped>
+.celula-titulo {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--cor-texto);
+  font-size: inherit;
+}
+
 .filtros {
   display: flex;
   flex-wrap: wrap;

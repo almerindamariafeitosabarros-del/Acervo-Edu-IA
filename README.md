@@ -23,6 +23,8 @@ Projeto de estágio — INFORGENESES.
 - [Variáveis do `.env`](#variáveis-do-env)
 - [Testes](#testes)
 - [Segurança](#segurança)
+- [LGPD — proteção de dados](#lgpd--proteção-de-dados)
+- [Acessibilidade](#acessibilidade)
 - [Estrutura de pastas](#estrutura-de-pastas)
 
 ---
@@ -222,6 +224,8 @@ conforto: cada ação é verificada de novo na API.
 | 7 | Assistente IA | `/assistente` |
 | 8 | Meu Perfil | `/perfil` |
 | 9 | Administração | `/administracao` (Gestor e Administrador) |
+| — | Política de Privacidade | `/privacidade` (aberta, com ou sem login) |
+| — | Declaração de Acessibilidade | `/acessibilidade` (aberta, com ou sem login) |
 
 Usuário não autenticado sempre volta para a tela 1. O menu lateral mostra apenas as
 telas permitidas ao perfil.
@@ -240,6 +244,9 @@ Base: `http://localhost:8000/api`. Autenticação por JWT no cabeçalho
 | `/auth/refresh/` | POST | Renova o token de acesso |
 | `/auth/me/` | GET, PUT | Dados da sessão e edição do próprio nome |
 | `/auth/change-password/` | POST | Troca de senha |
+| `/auth/me/export/` | GET | Baixa todos os dados do titular em JSON (LGPD, art. 18) |
+| `/auth/me/delete/` | POST | Exclui a conta e todos os dados do titular |
+| `/auth/consent/` | GET, POST | Versão vigente dos termos e registro de novo aceite |
 | `/documents/mine/` | GET, POST | Meus documentos e cadastro com upload |
 | `/documents/public/` | GET | Acervo Público com busca e filtros |
 | `/documents/all/` | GET | Todos os documentos (Gestor e Admin) |
@@ -305,8 +312,9 @@ python manage.py test apps.documents  # apenas um app
 ```
 
 Os testes cobrem cadastro e login, permissões por perfil, upload e seus limites,
-publicação e despublicação, isolamento de documentos privados, extração de texto e o
-comportamento do assistente com o Ollama indisponível.
+publicação e despublicação, isolamento de documentos privados, extração de texto, o
+comportamento do assistente com o Ollama indisponível e os direitos da LGPD
+(consentimento obrigatório, exportação e exclusão de conta).
 
 Para rodar sem Docker: `USE_SQLITE=True python manage.py test`.
 
@@ -328,6 +336,84 @@ npm run build
 - Senhas com o hash padrão do Django e validadores de força ativados.
 - CORS liberado apenas para a origem do frontend.
 - Em produção: `DEBUG=False`, cookies seguros e `X-Frame-Options: DENY`.
+- Nenhum dado é enviado a serviços externos: a IA roda na própria máquina.
+
+---
+
+## LGPD — proteção de dados
+
+A plataforma trata dados pessoais de estudantes e professores, então segue a
+Lei 13.709/2018 desde o código, não apenas no texto da política.
+
+**Minimização (art. 6º, III).** São coletados apenas nome, e-mail e o que o próprio
+usuário envia. Não há CPF, telefone, endereço, localização, cookies de rastreamento nem
+ferramentas de publicidade.
+
+**Consentimento registrado (art. 8º, § 1º).** O cadastro exige o aceite dos Termos de Uso
+e da Política de Privacidade. O sistema guarda a data e a versão aceita em
+`accepted_terms_at` e `accepted_terms_version`. Ao mudar o texto da política, basta subir
+`TERMS_VERSION` em `backend/apps/accounts/models.py`: o consentimento antigo deixa de
+valer e um novo aceite é pedido.
+
+**Direitos do titular (art. 18).** Implementados na tela Meu Perfil:
+
+| Direito | Como é atendido |
+| --- | --- |
+| Acesso e portabilidade (II e V) | `GET /api/auth/me/export/` devolve um JSON com cadastro, documentos e histórico do assistente |
+| Correção (III) | Edição do nome no perfil e dos metadados de cada documento |
+| Eliminação e revogação (VI e IX) | `POST /api/auth/me/delete/` apaga conta, documentos, arquivos em disco e histórico |
+| Informação sobre compartilhamento (VII) | Política de Privacidade, seção 4 — não há compartilhamento com terceiros |
+
+A exclusão pede senha **e** a palavra `EXCLUIR` digitada, porque é irreversível. Os
+arquivos são removidos do disco antes dos registros, para não deixar conteúdo órfão.
+
+**IA sem transferência de dados.** O modelo roda localmente via Ollama. Nenhum documento é
+enviado a serviços de IA na nuvem, o que elimina a transferência internacional de dados
+(art. 33) e o uso do material de estudantes para treinar modelos de terceiros. Arquivos
+enviados apenas para uma pergunta avulsa são lidos em memória e descartados.
+
+**Segurança (art. 46).** Veja a seção [Segurança](#segurança): senhas com hash, arquivos
+sem URL pública, permissões validadas no servidor.
+
+A Política de Privacidade completa fica em `/privacidade`, aberta a qualquer pessoa, com
+a tabela de dados, finalidade e base legal de cada coleta.
+
+---
+
+## Acessibilidade
+
+Material de estudo precisa chegar a todas as pessoas. A interface segue as diretrizes
+**WCAG 2.1 nível AA** e a Lei Brasileira de Inclusão (Lei 13.146/2015, art. 63).
+
+O que está implementado:
+
+- **Navegação completa por teclado**, com link "Pular para o conteúdo" (critério 2.4.1) e
+  foco sempre visível, em contorno de 3 px (2.4.7).
+- **Estrutura semântica**: regiões de navegação e conteúdo principal, hierarquia de
+  títulos sem saltos, tabelas com cabeçalhos e legendas (1.3.1).
+- **Avisos anunciados**: erros usam `role="alert"`, confirmações usam `role="status"`, e a
+  troca de tela é comunicada por região dinâmica (4.1.3).
+- **Formulários**: todo campo tem rótulo associado; erros vêm com texto, ícone e
+  `aria-invalid`, ligados ao campo por `aria-describedby` (3.3.1 e 3.3.2).
+- **Erro nunca só pela cor** (1.4.1) e **links sublinhados** dentro de texto corrido.
+- **Contraste mínimo de 4,5:1** em todo texto (1.4.3), verificado por cálculo.
+- **Zoom de 200%** sem rolagem horizontal (1.4.4).
+- **`prefers-reduced-motion`** respeitado (2.3.3) e suporte a alto contraste do Windows.
+- **Idioma pt-BR declarado** (3.1.1).
+- Mensagens de validação escritas pela aplicação, em português — sem depender do texto
+  nativo do navegador, que sai no idioma dele.
+
+Como a verificação foi feita:
+
+```bash
+# auditoria automatizada com axe-core (0 violações nas 11 telas)
+# e checagens de teclado, foco, hierarquia de títulos e zoom
+# — os roteiros usados estão descritos em docs/decisoes.md
+```
+
+Limitações conhecidas estão declaradas em `/acessibilidade`, com destaque para os PDFs
+digitalizados enviados por usuários, que não podem ser lidos por leitores de tela nem
+pelo assistente de IA.
 
 ---
 
@@ -343,7 +429,7 @@ Acervo-Edu-IA/
 │   ├── requirements.txt
 │   ├── acervo_edu_ia/        # settings, urls, wsgi
 │   └── apps/
-│       ├── accounts/         # usuário, perfis, autenticação
+│       ├── accounts/         # usuário, perfis, autenticação, LGPD (privacy.py)
 │       ├── academics/        # instituições, cursos, disciplinas, categorias, tags
 │       ├── documents/        # documentos, upload, publicação, download
 │       └── ai/               # extração de texto, Ollama, histórico
@@ -354,5 +440,5 @@ Acervo-Edu-IA/
         ├── router/           # rotas e proteção por perfil
         ├── services/         # Axios, formatações
         ├── stores/           # Pinia (sessão e catálogo)
-        └── views/            # telas
+        └── views/            # telas (inclui privacidade e acessibilidade)
 ```

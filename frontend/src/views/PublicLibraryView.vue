@@ -11,7 +11,9 @@ const catalogo = useCatalogoStore()
 const documentos = ref([])
 const total = ref(0)
 const pagina = ref(1)
-const carregando = ref(false)
+// Começa carregando: sem isso a tela mostra "0 documentos" por um instante,
+// e o leitor de tela anuncia esse zero como se fosse o resultado real.
+const carregando = ref(true)
 const erro = ref('')
 
 const filtros = reactive({
@@ -151,10 +153,10 @@ onMounted(async () => {
       </div>
     </form>
 
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
 
     <section>
-      <p class="texto-suave resultado">
+      <p class="texto-suave resultado" role="status" aria-live="polite">
         {{ carregando ? 'Carregando…' : `${total} documento(s) encontrado(s)` }}
       </p>
       <div v-if="documentos.length" class="grade-cartoes">

@@ -51,8 +51,8 @@ onMounted(carregar)
 
 <template>
   <div class="pilha">
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
-    <p v-if="aviso" class="mensagem mensagem-sucesso">{{ aviso }}</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+    <p v-if="aviso" class="mensagem mensagem-sucesso" role="status">{{ aviso }}</p>
 
     <section class="cartao">
       <h2>Nova categoria</h2>
@@ -66,7 +66,7 @@ onMounted(carregar)
           <input id="cat-descricao" v-model.trim="nova.description" type="text" maxlength="255" />
         </div>
         <div class="campo">
-          <label>&nbsp;</label>
+          <span class="rotulo-vazio" aria-hidden="true"></span>
           <button class="botao" type="submit">Cadastrar</button>
         </div>
       </form>

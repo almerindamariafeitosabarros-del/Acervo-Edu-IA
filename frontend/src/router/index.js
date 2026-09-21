@@ -10,6 +10,18 @@ const routes = [
     meta: { publico: true, titulo: 'Entrar' },
   },
   {
+    path: '/privacidade',
+    name: 'privacidade',
+    component: () => import('@/views/PrivacyView.vue'),
+    meta: { publico: true, semSessao: true, titulo: 'Política de Privacidade' },
+  },
+  {
+    path: '/acessibilidade',
+    name: 'acessibilidade',
+    component: () => import('@/views/AccessibilityView.vue'),
+    meta: { publico: true, semSessao: true, titulo: 'Declaração de Acessibilidade' },
+  },
+  {
     path: '/',
     component: () => import('@/components/AppLayout.vue'),
     children: [
@@ -84,6 +96,11 @@ router.beforeEach(async (to) => {
 
   if (!auth.carregado) {
     await auth.carregarUsuario()
+  }
+
+  // Privacidade e acessibilidade abrem para qualquer pessoa, logada ou não.
+  if (to.meta.semSessao) {
+    return true
   }
 
   if (to.meta.publico) {

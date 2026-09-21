@@ -65,8 +65,8 @@ onMounted(carregar)
 
 <template>
   <div class="pilha">
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
-    <p v-if="aviso" class="mensagem mensagem-sucesso">{{ aviso }}</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+    <p v-if="aviso" class="mensagem mensagem-sucesso" role="status">{{ aviso }}</p>
 
     <div class="duas-colunas">
       <section class="cartao">

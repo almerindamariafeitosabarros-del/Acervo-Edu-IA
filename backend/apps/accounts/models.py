@@ -12,6 +12,12 @@ class Role(models.TextChoices):
     ADMIN = 'admin', 'Administrador'
 
 
+# Versão vigente dos Termos de Uso e da Política de Privacidade. Ao mudar o
+# texto da política, suba esta versão: o consentimento registrado deixa de valer
+# e o usuário precisa aceitar de novo (LGPD, art. 8º).
+TERMS_VERSION = '1.0'
+
+
 # Ordem hierárquica usada pelas permissões (quanto maior, mais poderes).
 ROLE_LEVEL = {
     Role.STUDENT: 1,
@@ -68,6 +74,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField('ativo', default=True)
     is_staff = models.BooleanField('acessa o admin do Django', default=False)
     date_joined = models.DateTimeField('cadastrado em', default=timezone.now)
+
+    # Registro do consentimento (LGPD, art. 8º, § 1º): guarda quando o titular
+    # aceitou e qual versão do texto estava vigente.
+    accepted_terms_at = models.DateTimeField('aceitou os termos em', null=True, blank=True)
+    accepted_terms_version = models.CharField('versão dos termos aceita', max_length=10, blank=True)
 
     objects = UserManager()
 
@@ -126,6 +137,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     def can_manage_users(self):
         """Apenas o Administrador gerencia usuários e instituições."""
         return self.has_role_at_least(Role.ADMIN)
+
+    @property
+    def terms_accepted(self):
+        """O consentimento vale apenas para a versão vigente dos termos."""
+        return bool(self.accepted_terms_at) and self.accepted_terms_version == TERMS_VERSION
+
+    def register_consent(self):
+        self.accepted_terms_at = timezone.now()
+        self.accepted_terms_version = TERMS_VERSION
 
     def get_full_name(self):
         return self.name

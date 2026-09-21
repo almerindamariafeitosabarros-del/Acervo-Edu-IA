@@ -1,12 +1,22 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const menuAberto = ref(false)
+
+// Leitores de tela não percebem a troca de página em uma SPA: avisamos aqui.
+const anuncio = ref('')
+watch(
+  () => route.name,
+  () => {
+    anuncio.value = `${route.meta.titulo || 'Página'} carregada.`
+  },
+)
 
 // O menu mostra apenas as telas permitidas ao perfil.
 const itens = computed(() => {
@@ -31,23 +41,29 @@ function sair() {
 
 <template>
   <div class="layout">
-    <aside class="menu" :class="{ aberto: menuAberto }">
-      <div class="marca">
-        <span class="marca-icone">📘</span>
-        <span>Acervo Edu IA</span>
-      </div>
+    <!-- Primeiro elemento focável da página: permite pular o menu (WCAG 2.4.1). -->
+    <a href="#conteudo-principal" class="pular-conteudo">Pular para o conteúdo</a>
 
-      <nav>
-        <RouterLink
-          v-for="item in itens"
-          :key="item.nome"
-          :to="{ name: item.nome }"
-          class="item"
-          @click="menuAberto = false"
-        >
-          <span aria-hidden="true">{{ item.icone }}</span>
-          {{ item.rotulo }}
-        </RouterLink>
+    <aside id="menu-lateral" class="menu" :class="{ aberto: menuAberto }">
+      <p class="marca">
+        <span class="marca-icone" aria-hidden="true">📘</span>
+        <span>Acervo Edu IA</span>
+      </p>
+
+      <nav aria-label="Menu principal">
+        <ul class="lista-menu">
+          <li v-for="item in itens" :key="item.nome">
+            <RouterLink
+              :to="{ name: item.nome }"
+              class="item"
+              :aria-current="$route.name === item.nome ? 'page' : undefined"
+              @click="menuAberto = false"
+            >
+              <span aria-hidden="true">{{ item.icone }}</span>
+              {{ item.rotulo }}
+            </RouterLink>
+          </li>
+        </ul>
       </nav>
 
       <div class="rodape-menu">
@@ -56,6 +72,11 @@ function sair() {
         <button type="button" class="botao botao-secundario botao-pequeno" @click="sair">
           Sair
         </button>
+        <p class="links-legais">
+          <RouterLink :to="{ name: 'privacidade' }">Privacidade</RouterLink>
+          <span aria-hidden="true">·</span>
+          <RouterLink :to="{ name: 'acessibilidade' }">Acessibilidade</RouterLink>
+        </p>
       </div>
     </aside>
 
@@ -64,16 +85,22 @@ function sair() {
         <button
           type="button"
           class="botao botao-secundario botao-pequeno alternar-menu"
+          :aria-expanded="menuAberto"
+          aria-controls="menu-lateral"
           @click="menuAberto = !menuAberto"
         >
-          ☰ Menu
+          <span aria-hidden="true">☰</span> Menu
         </button>
         <span class="titulo-topo">{{ $route.meta.titulo }}</span>
       </header>
-      <main class="principal">
+
+      <main id="conteudo-principal" class="principal" tabindex="-1">
         <RouterView />
       </main>
     </div>
+
+    <!-- Anuncia a troca de tela para quem usa leitor de tela (WCAG 4.1.3). -->
+    <p aria-live="polite" class="apenas-leitor-de-tela">{{ anuncio }}</p>
   </div>
 </template>
 
@@ -107,10 +134,28 @@ function sair() {
 }
 
 nav {
+  flex: 1;
+}
+
+.lista-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  flex: 1;
+}
+
+.marca {
+  margin: 0;
+}
+
+.links-legais {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .item {
@@ -128,7 +173,7 @@ nav {
   text-decoration: none;
 }
 
-.item.router-link-exact-active {
+.item[aria-current='page'] {
   background: var(--cor-primaria-clara);
   color: var(--cor-primaria-escura);
   font-weight: 600;

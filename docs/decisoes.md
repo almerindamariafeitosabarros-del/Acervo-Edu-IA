@@ -80,3 +80,44 @@ optamos sempre pela solução mais simples que atende ao requisito.
 - **Conta desativada recebe a mesma mensagem de senha errada.** O `authenticate()` do
   Django já recusa contas inativas, e repetir a mensagem genérica evita revelar quais
   e-mails existem.
+
+## LGPD (Lei 13.709/2018)
+
+- **Consentimento com data e versão**, não apenas um booleano. Guardar
+  `accepted_terms_at` + `accepted_terms_version` permite provar *quando* e *a qual texto*
+  o titular consentiu (art. 8º, § 1º). Subir `TERMS_VERSION` invalida os aceites antigos
+  e faz o sistema pedir um novo — sem migração de dados.
+- **Exportação em JSON, pela própria API.** Um endpoint que devolve o arquivo pronto
+  (`Content-Disposition: attachment`) resolve acesso e portabilidade (art. 18, II e V) sem
+  depender de processo manual. Os arquivos enviados ficam de fora do relatório: são
+  binários grandes, e a tela Meus Documentos já permite baixá-los um a um.
+- **Exclusão pede senha e a palavra `EXCLUIR`.** Duas barreiras, porque a operação é
+  irreversível e leva junto documentos e histórico. Os arquivos saem do disco antes dos
+  registros, para não restar conteúdo órfão em `MEDIA_ROOT`.
+- **Exclusão de verdade, não anonimização.** Para um acervo educacional, manter registros
+  "anonimizados" traria pouco valor e mais risco; o art. 18, VI fala em eliminação, e é
+  isso que o sistema faz.
+- **A IA local é um argumento de privacidade, não só de custo.** Rodar o modelo na máquina
+  da instituição evita transferência internacional de dados (art. 33) e impede que
+  material de estudantes alimente modelos de terceiros.
+
+## Acessibilidade (WCAG 2.1 AA / Lei 13.146/2015)
+
+- **Validação escrita pela aplicação, não pelo navegador.** A mensagem nativa do
+  `required` sai no idioma do navegador — apareceu em inglês nos testes. O aceite dos
+  termos passou a ser validado no código, com mensagem em português, `aria-invalid` e
+  `aria-describedby` ligando o erro ao campo.
+- **`aria-current="page"` também serve de gancho de estilo** no menu, no lugar da classe
+  do Vue Router. Assim o destaque visual e a informação para o leitor de tela vêm da
+  mesma fonte e não podem divergir.
+- **Listas começam em "Carregando…", não em "0 documentos".** Com `aria-live`, o zero
+  inicial era anunciado como se fosse o resultado da busca.
+- **Contraste conferido por cálculo, não a olho.** O verde do selo "Público" estava em
+  4,49:1 — reprovava por 0,01. Foi para `#146b33` (5,91:1).
+- **Links sublinhados dentro de texto corrido** (critério 1.4.1); em menus e botões o
+  formato já distingue, então ali o sublinhado fica de fora.
+- **Emojis decorativos com `aria-hidden`**, para o leitor de tela não anunciar "livro
+  aberto" antes de cada título.
+- **Verificação:** auditoria com axe-core nas 11 telas (0 violações WCAG 2.1 A/AA) mais
+  checagens de teclado — skip link, foco visível, rótulos, hierarquia de títulos, zoom de
+  200% sem rolagem horizontal e anúncio de troca de tela.

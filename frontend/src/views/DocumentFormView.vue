@@ -122,12 +122,12 @@ onMounted(async () => {
       </p>
     </header>
 
-    <p v-if="erro" class="mensagem mensagem-erro">{{ erro }}</p>
-    <p v-if="carregando" class="texto-suave">Carregando…</p>
+    <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+    <p v-if="carregando" class="texto-suave" role="status">Carregando…</p>
 
     <form v-else class="cartao" @submit.prevent="salvar">
       <div class="campo">
-        <label for="titulo">Título *</label>
+        <label for="titulo">Título <span class="obrigatorio" aria-hidden="true">*</span><span class="apenas-leitor-de-tela"> (obrigatório)</span></label>
         <input id="titulo" v-model.trim="form.title" type="text" required maxlength="200" />
       </div>
 
@@ -191,9 +191,19 @@ onMounted(async () => {
       </div>
 
       <div class="campo">
-        <label for="arquivo">Arquivo {{ editando ? '' : '*' }}</label>
-        <input id="arquivo" type="file" accept=".pdf,.docx,.pptx,.txt" @change="selecionarArquivo" />
-        <p class="campo-ajuda">
+        <label for="arquivo">
+          Arquivo
+          <span v-if="!editando" class="obrigatorio" aria-hidden="true">*</span>
+          <span v-if="!editando" class="apenas-leitor-de-tela">(obrigatório)</span>
+        </label>
+        <input
+          id="arquivo"
+          type="file"
+          accept=".pdf,.docx,.pptx,.txt"
+          aria-describedby="ajuda-arquivo"
+          @change="selecionarArquivo"
+        />
+        <p id="ajuda-arquivo" class="campo-ajuda">
           Formatos aceitos: PDF, DOCX, PPTX e TXT.
           <template v-if="editando && arquivoAtual">
             Arquivo atual: <strong>{{ arquivoAtual }}</strong

@@ -120,12 +120,14 @@ onMounted(async () => {
       <h1>Assistente IA</h1>
       <p class="texto-suave">
         Escolha um documento e faça uma pergunta. A resposta usa apenas o conteúdo do
-        material, processado por um modelo que roda na sua máquina.
+        material, processado por um modelo que roda na máquina da instituição —
+        <strong>nenhum documento é enviado a serviços externos</strong>.
       </p>
     </header>
 
     <div class="colunas">
-      <section class="cartao">
+      <section class="cartao" aria-labelledby="titulo-pergunta">
+        <h2 id="titulo-pergunta" class="apenas-leitor-de-tela">Fazer uma pergunta</h2>
         <form @submit.prevent="enviar">
           <div class="campo">
             <label for="origem">Documento</label>
@@ -172,15 +174,18 @@ onMounted(async () => {
               placeholder="Ex.: Resuma este material"
             ></textarea>
             <div class="sugestoes">
-              <button
-                v-for="sugestao in sugestoes"
-                :key="sugestao"
-                type="button"
-                class="botao botao-secundario botao-pequeno"
-                @click="prompt = sugestao"
-              >
-                {{ sugestao }}
-              </button>
+              <p id="rotulo-sugestoes" class="campo-ajuda">Sugestões de pergunta:</p>
+              <div class="lista-sugestoes" role="group" aria-labelledby="rotulo-sugestoes">
+                <button
+                  v-for="sugestao in sugestoes"
+                  :key="sugestao"
+                  type="button"
+                  class="botao botao-secundario botao-pequeno"
+                  @click="prompt = sugestao"
+                >
+                  {{ sugestao }}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -196,12 +201,12 @@ onMounted(async () => {
         <p v-if="erro" class="mensagem mensagem-erro margem-topo">{{ erro }}</p>
         <p v-if="aviso" class="mensagem mensagem-aviso margem-topo">{{ aviso }}</p>
 
-        <div v-if="enviando" class="carregando">
+        <div v-if="enviando" class="carregando" role="status">
           <span class="girando" aria-hidden="true">⏳</span>
           Lendo o documento e gerando a resposta…
         </div>
 
-        <article v-else-if="resposta" class="resposta">
+        <article v-else-if="resposta" class="resposta" aria-live="polite" tabindex="-1">
           <h2>Resposta</h2>
           <p class="texto-suave detalhes">
             {{ resposta.document_title }} · {{ resposta.model }} ·
@@ -211,12 +216,12 @@ onMounted(async () => {
         </article>
       </section>
 
-      <section class="cartao">
-        <h2>Histórico</h2>
+      <section class="cartao" aria-labelledby="titulo-historico">
+        <h2 id="titulo-historico">Histórico</h2>
         <p v-if="!historico.length" class="texto-suave">
           Suas perguntas aparecem aqui depois da primeira consulta.
         </p>
-        <ul v-else class="historico">
+        <ul v-else class="historico" aria-label="Suas perguntas anteriores">
           <li v-for="item in historico" :key="item.id">
             <p class="pergunta">{{ item.prompt }}</p>
             <p class="texto-suave detalhes">
@@ -249,10 +254,14 @@ onMounted(async () => {
 }
 
 .sugestoes {
+  margin-top: 0.5rem;
+}
+
+.lista-sugestoes {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-top: 0.5rem;
+  margin-top: 0.3rem;
 }
 
 .margem-topo {
