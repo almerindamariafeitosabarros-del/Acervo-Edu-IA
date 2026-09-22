@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import { mensagemDeErro } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
+import LogoMarca from '@/components/marca/LogoMarca.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -75,7 +76,8 @@ async function criarConta() {
 <template>
   <main class="tela">
     <section class="apresentacao" aria-labelledby="titulo-app">
-      <h1 id="titulo-app"><span aria-hidden="true">📘</span> Acervo Edu IA</h1>
+      <h1 id="titulo-app" class="titulo-com-logo"><LogoMarca :tamanho="44" /> Acervo Edu IA</h1>
+      <p class="slogan">Conhecimento que transforma</p>
       <p>
         Guarde, organize e compartilhe materiais educacionais. Publique no Acervo Público
         e use o assistente de IA local para entender seus documentos.
@@ -226,12 +228,32 @@ async function criarConta() {
   margin: 0 auto;
 }
 
+.apresentacao {
+  background: var(--degrade-institucional);
+  color: #ffffff;
+  padding: 2.5rem;
+  border-radius: var(--raio-xl);
+}
+
+.titulo-com-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.slogan {
+  font-weight: 600;
+  color: var(--cor-texto-sobre-marinho);
+  margin-top: -0.5rem;
+}
+
 .apresentacao h1 {
   font-size: 2rem;
+  color: #ffffff;
 }
 
 .apresentacao p {
-  color: var(--cor-texto-suave);
+  color: var(--cor-texto-sobre-marinho);
   max-width: 42ch;
 }
 
@@ -241,11 +263,13 @@ async function criarConta() {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  color: var(--cor-texto-suave);
+  color: var(--cor-texto-sobre-marinho);
+  font-weight: 600;
 }
 
 .caixa {
   padding: 1.5rem;
+  border-radius: var(--raio-xl);
 }
 
 .abas {

@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 import DocumentCard from '@/components/DocumentCard.vue'
 import PaginacaoSimples from '@/components/PaginacaoSimples.vue'
@@ -7,6 +8,7 @@ import api, { mensagemDeErro } from '@/services/api'
 import { useCatalogoStore } from '@/stores/catalogo'
 
 const catalogo = useCatalogoStore()
+const route = useRoute()
 
 const documentos = ref([])
 const total = ref(0)
@@ -77,6 +79,10 @@ function mudarPagina(nova) {
 }
 
 onMounted(async () => {
+  // Busca vinda da caixa de pesquisa do topo (AppLayout), via ?search=.
+  if (typeof route.query.search === 'string') {
+    filtros.search = route.query.search
+  }
   await catalogo.carregar().catch(() => {})
   buscar()
 })

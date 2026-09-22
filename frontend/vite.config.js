@@ -12,5 +12,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true,
+    // Bind mount do Windows via Docker Desktop não propaga eventos de
+    // arquivo de forma confiável para o container — sem polling, o Vite
+    // não recarrega mudanças feitas no host.
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
   },
 })

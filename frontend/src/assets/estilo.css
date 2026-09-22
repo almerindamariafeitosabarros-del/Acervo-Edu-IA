@@ -1,20 +1,50 @@
 :root {
-  --cor-fundo: #f4f6fb;
+  /* Cores institucionais — Manual de Marca Acervo Edu IA v1.0 */
+  --cor-marinho: #123b66;
+  --cor-marinho-profundo: #0e2f52;
+  --cor-azul: #1976a8;
+  --cor-azul-suave: #e4effa;
+  --cor-texto-sobre-marinho: #cfe0f2;
+  --degrade-institucional: linear-gradient(135deg, var(--cor-marinho) 0%, var(--cor-azul) 100%);
+
+  --cor-fundo: #f4f7fb;
   --cor-superficie: #ffffff;
-  --cor-borda: #dfe4ee;
-  --cor-texto: #1f2a3d;
-  --cor-texto-suave: #5a6678;
-  --cor-primaria: #1d4ed8;
-  --cor-primaria-escura: #1e40af;
-  --cor-primaria-clara: #eaf0ff;
-  --cor-sucesso: #146b33;
-  --cor-sucesso-clara: #e7f6ec;
-  --cor-alerta: #8a4304;
-  --cor-alerta-clara: #fdf2e0;
-  --cor-erro: #b91c1c;
-  --cor-erro-clara: #fdecec;
-  --raio: 10px;
-  --sombra: 0 1px 3px rgba(20, 33, 61, 0.08);
+  --cor-borda: #e1e8f0;
+  --cor-texto: #1f2d3d;
+  --cor-texto-suave: #56667a;
+
+  --cor-primaria: var(--cor-azul);
+  --cor-primaria-escura: var(--cor-marinho);
+  --cor-primaria-clara: var(--cor-azul-suave);
+
+  --cor-sucesso: #1d7a3e;
+  --cor-sucesso-clara: #e3f6ea;
+  --cor-alerta: #a8570f;
+  --cor-alerta-clara: #fdeede;
+  --cor-erro: #c0392b;
+  --cor-erro-clara: #fbeae8;
+
+  /* Selos de visibilidade e de instituição (manual, seção 07) */
+  --selo-publico-texto: #1d7a3e;
+  --selo-publico-fundo: #e3f6ea;
+  --selo-comunidade-texto: #1a5f96;
+  --selo-comunidade-fundo: #e4effa;
+  --selo-restrito-texto: #a8570f;
+  --selo-restrito-fundo: #fdeede;
+  --selo-inst-publica-texto: #34495e;
+  --selo-inst-publica-fundo: #eaf0f6;
+  --selo-inst-privada-texto: #6b3fa0;
+  --selo-inst-privada-fundo: #f1e9fb;
+
+  --fonte: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --raio-sm: 6px;
+  --raio-md: 8px;
+  --raio-lg: 12px;
+  --raio-xl: 16px;
+  --raio-pill: 999px;
+  --raio: var(--raio-md);
+  --sombra: 0 1px 3px rgba(18, 59, 102, 0.1);
 }
 
 * {
@@ -25,7 +55,7 @@
    Foco sempre visível ao navegar por teclado (critério 2.4.7). O :focus-visible
    evita o anel de foco no clique do mouse, sem prejudicar quem usa Tab. */
 :focus-visible {
-  outline: 3px solid var(--cor-primaria);
+  outline: 2px solid var(--cor-primaria);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -86,7 +116,7 @@
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--fonte);
   background: var(--cor-fundo);
   color: var(--cor-texto);
   font-size: 15px;
@@ -96,6 +126,7 @@ body {
 h1, h2, h3, h4 {
   margin: 0 0 0.5rem;
   line-height: 1.25;
+  color: var(--cor-marinho);
 }
 
 h1 { font-size: 1.6rem; }
@@ -269,7 +300,7 @@ textarea[aria-invalid='true'] {
 .cartao {
   background: var(--cor-superficie);
   border: 1px solid var(--cor-borda);
-  border-radius: var(--raio);
+  border-radius: var(--raio-lg);
   padding: 1.25rem;
   box-shadow: var(--sombra);
 }
@@ -284,24 +315,40 @@ textarea[aria-invalid='true'] {
 .selo {
   display: inline-block;
   padding: 0.15rem 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--raio-pill);
   font-size: 0.75rem;
   font-weight: 600;
 }
 
+/* Público: qualquer pessoa, sem login. */
 .selo-publico {
-  background: var(--cor-sucesso-clara);
-  color: var(--cor-sucesso);
+  background: var(--selo-publico-fundo);
+  color: var(--selo-publico-texto);
 }
 
-.selo-privado {
-  background: var(--cor-alerta-clara);
-  color: var(--cor-alerta);
+/* Comunidade da instituição: autenticados da mesma instituição. */
+.selo-comunidade {
+  background: var(--selo-comunidade-fundo);
+  color: var(--selo-comunidade-texto);
 }
 
+/* Restrito: membros da disciplina, gestor/admin e o autor. */
+.selo-restrito {
+  background: var(--selo-restrito-fundo);
+  color: var(--selo-restrito-texto);
+}
+
+/* Tag/categoria informativa (não é nível de visibilidade). */
 .selo-neutro {
-  background: var(--cor-primaria-clara);
-  color: var(--cor-primaria-escura);
+  background: var(--selo-comunidade-fundo);
+  color: var(--selo-comunidade-texto);
+}
+
+/* Rascunho/Publicado abaixo do selo de visibilidade (published_at). */
+.situacao {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
 }
 
 /* ------------------------------------------------------------------ Mensagens */
