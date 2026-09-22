@@ -1,14 +1,17 @@
 from django.db.models import Count, ProtectedError
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.accounts.permissions import ReadOnlyOrAdmin, ReadOnlyOrManager
+from apps.accounts.permissions import IsManagerOrAdmin, ReadOnlyOrAdmin, ReadOnlyOrManager
 
-from .models import Category, Course, Institution, Subject, Tag
+from .models import Category, Course, Institution, Subject, SubjectMember, Tag
 from .serializers import (
     CategorySerializer,
     CourseSerializer,
     InstitutionSerializer,
+    SubjectMemberSerializer,
     SubjectSerializer,
     TagSerializer,
 )
@@ -70,6 +73,30 @@ class SubjectViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Subject.objects.select_related('course', 'course__institution').order_by('name')
+
+    @action(detail=True, methods=['get', 'post'], permission_classes=[IsManagerOrAdmin])
+    def members(self, request, pk=None):
+        """Lista ou vincula usuários à disciplina — controla o acesso Restrito."""
+        subject = self.get_object()
+        if request.method == 'GET':
+            members = subject.members.select_related('user').order_by('user__name')
+            return Response(SubjectMemberSerializer(members, many=True).data)
+        serializer = SubjectMemberSerializer(data=request.data, context={'subject': subject})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=['delete'],
+        url_path='members/(?P<member_id>[^/.]+)',
+        permission_classes=[IsManagerOrAdmin],
+    )
+    def remove_member(self, request, pk=None, member_id=None):
+        subject = self.get_object()
+        member = get_object_or_404(SubjectMember, pk=member_id, subject=subject)
+        member.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CategoryViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):

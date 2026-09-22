@@ -13,8 +13,9 @@ def document_upload_path(instance, filename):
 
 
 class Visibility(models.TextChoices):
-    PRIVATE = 'private', 'Privado'
     PUBLIC = 'public', 'Público'
+    COMMUNITY = 'community', 'Comunidade'
+    RESTRICTED = 'restricted', 'Restrito'
 
 
 class Document(models.Model):
@@ -40,6 +41,14 @@ class Document(models.Model):
         null=True,
         blank=True,
     )
+    institution = models.ForeignKey(
+        'academics.Institution',
+        verbose_name='instituição',
+        on_delete=models.PROTECT,
+        related_name='documents',
+        null=True,
+        blank=True,
+    )
     tags = models.ManyToManyField(
         'academics.Tag', verbose_name='tags', related_name='documents', blank=True
     )
@@ -55,7 +64,7 @@ class Document(models.Model):
         related_name='documents',
     )
     visibility = models.CharField(
-        'visibilidade', max_length=10, choices=Visibility.choices, default=Visibility.PRIVATE
+        'visibilidade', max_length=10, choices=Visibility.choices, default=Visibility.COMMUNITY
     )
     published_at = models.DateTimeField('publicado em', null=True, blank=True)
 
@@ -69,6 +78,12 @@ class Document(models.Model):
         indexes = [
             models.Index(fields=['visibility', '-published_at']),
         ]
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(visibility=Visibility.RESTRICTED) | models.Q(subject__isnull=False),
+                name='document_restricted_requires_subject',
+            ),
+        ]
 
     def __str__(self):
         return self.title
@@ -78,42 +93,70 @@ class Document(models.Model):
         return self.visibility == Visibility.PUBLIC
 
     @property
+    def is_published(self):
+        return self.published_at is not None
+
+    @property
     def extension(self):
         name = self.original_filename or (self.file.name if self.file else '')
         return os.path.splitext(name)[1].lower().lstrip('.')
+
+    def _is_institution_staff(self, user):
+        """Gestor/Admin com poder sobre este documento: Admin geral (sem
+        instituição) vê tudo; Gestor só a própria instituição."""
+        if not user.can_manage_catalog:
+            return False
+        if user.is_admin_role:
+            return True
+        return user.institution_id is not None and user.institution_id == self.institution_id
+
+    def _is_subject_member(self, user):
+        return self.subject_id is not None and self.subject.members.filter(user_id=user.id).exists()
 
     # ------------------------------------------------------------------
     # Regras de acesso (sempre validadas no backend)
     # ------------------------------------------------------------------
     def can_be_viewed_by(self, user):
-        """Público: todos os cadastrados. Privado: dono, Gestor e Admin."""
-        if not user or not user.is_authenticated:
-            return False
-        if self.is_public:
+        """Rascunho: só dono e gestor/admin da instituição. Publicado:
+        Público a todos; Comunidade à mesma instituição; Restrito a membro
+        da disciplina, dono ou gestor/admin da instituição."""
+        authenticated = bool(user) and user.is_authenticated
+        if authenticated and self.owner_id == user.id:
             return True
-        return self.owner_id == user.id or user.can_manage_catalog
+        if authenticated and self._is_institution_staff(user):
+            return True
+        if not self.is_published:
+            return False
+        if self.visibility == Visibility.PUBLIC:
+            return True
+        if not authenticated:
+            return False
+        if self.visibility == Visibility.COMMUNITY:
+            return user.institution_id is not None and user.institution_id == self.institution_id
+        if self.visibility == Visibility.RESTRICTED:
+            return self._is_subject_member(user)
+        return False
 
     def can_be_edited_by(self, user):
-        """Dono, Gestor e Administrador editam/excluem."""
+        """Dono, Gestor e Administrador (da própria instituição) editam/excluem."""
         if not user or not user.is_authenticated:
             return False
-        return self.owner_id == user.id or user.can_manage_catalog
+        return self.owner_id == user.id or self._is_institution_staff(user)
 
     def can_be_published_by(self, user):
-        """Professor dono (ou acima), Gestor e Administrador publicam."""
+        """Professor dono (ou acima), Gestor e Administrador (da própria
+        instituição) publicam."""
         if not user or not user.is_authenticated:
             return False
-        if user.can_manage_catalog:
+        if self._is_institution_staff(user):
             return True
         return self.owner_id == user.id and user.can_publish_own
 
     # ------------------------------------------------------------------
     def publish(self):
-        self.visibility = Visibility.PUBLIC
         self.published_at = timezone.now()
-        self.save(update_fields=['visibility', 'published_at', 'updated_at'])
+        self.save(update_fields=['published_at', 'updated_at'])
 
     def unpublish(self):
-        self.visibility = Visibility.PRIVATE
         self.published_at = None
-        self.save(update_fields=['visibility', 'published_at', 'updated_at'])
+        self.save(update_fields=['published_at', 'updated_at'])

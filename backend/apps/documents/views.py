@@ -6,6 +6,7 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -16,7 +17,7 @@ from .models import Document, Visibility
 from .serializers import DocumentSerializer, DocumentWriteSerializer
 
 BASE_QUERYSET = Document.objects.select_related(
-    'owner', 'category', 'subject', 'subject__course', 'subject__course__institution'
+    'owner', 'category', 'institution', 'subject', 'subject__course', 'subject__course__institution'
 ).prefetch_related('tags')
 
 SEARCH_FIELDS = ['title', 'description', 'material_author', 'tags__name']
@@ -39,20 +40,24 @@ class MyDocumentViewSet(viewsets.ModelViewSet):
 
 
 class PublicDocumentListView(ListAPIView):
-    """/api/documents/public/ — Acervo Público, visível a todos os cadastrados."""
+    """/api/documents/public/ — Acervo Público, aberto a visitantes sem login (RF18)."""
 
     serializer_class = DocumentSerializer
+    permission_classes = [AllowAny]
     filterset_class = PublicDocumentFilter
     search_fields = SEARCH_FIELDS
     ordering_fields = ['published_at', 'created_at', 'title']
     ordering = ['-published_at']
 
     def get_queryset(self):
-        return BASE_QUERYSET.filter(visibility=Visibility.PUBLIC).distinct()
+        return BASE_QUERYSET.filter(
+            visibility=Visibility.PUBLIC, published_at__isnull=False
+        ).distinct()
 
 
 class AllDocumentListView(ListAPIView):
-    """/api/documents/all/ — moderação de documentos (Gestor e Administrador)."""
+    """/api/documents/all/ — moderação de documentos (Gestor vê a própria
+    instituição; Administrador geral vê todas)."""
 
     serializer_class = DocumentSerializer
     permission_classes = [IsManagerOrAdmin]
@@ -61,7 +66,11 @@ class AllDocumentListView(ListAPIView):
     ordering_fields = ['created_at', 'published_at', 'title']
 
     def get_queryset(self):
-        return BASE_QUERYSET.all().distinct()
+        user = self.request.user
+        queryset = BASE_QUERYSET.all()
+        if not user.is_admin_role:
+            queryset = queryset.filter(institution_id=user.institution_id)
+        return queryset.distinct()
 
 
 class DocumentDetailViewSet(
@@ -73,8 +82,12 @@ class DocumentDetailViewSet(
     """/api/documents/{id}/ — detalhar, editar, excluir, publicar e baixar.
 
     Documento privado de outro usuário responde 404 (não revela a existência).
-    O cadastro de documentos é feito por /api/documents/mine/.
+    O cadastro de documentos é feito por /api/documents/mine/. Visitantes sem
+    login acessam documentos PÚBLICOS (RF18, RF24); edição/exclusão continuam
+    exigindo autenticação via can_be_edited_by.
     """
+
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action in ('update', 'partial_update'):
@@ -84,11 +97,26 @@ class DocumentDetailViewSet(
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
-            return Document.objects.none()
+            return BASE_QUERYSET.filter(visibility=Visibility.PUBLIC, published_at__isnull=False)
         queryset = BASE_QUERYSET.all()
-        if user.can_manage_catalog:
+        if user.is_admin_role:
             return queryset
-        return queryset.filter(Q(visibility=Visibility.PUBLIC) | Q(owner=user))
+        if user.can_manage_catalog:
+            return queryset.filter(Q(institution_id=user.institution_id) | Q(owner=user))
+        return queryset.filter(
+            Q(owner=user)
+            | Q(visibility=Visibility.PUBLIC, published_at__isnull=False)
+            | Q(
+                visibility=Visibility.COMMUNITY,
+                published_at__isnull=False,
+                institution_id=user.institution_id,
+            )
+            | Q(
+                visibility=Visibility.RESTRICTED,
+                published_at__isnull=False,
+                subject__members__user=user,
+            )
+        )
 
     def get_object(self):
         document = super().get_object()
@@ -156,17 +184,25 @@ class DocumentStatsView(APIView):
         user = request.user
         own = Document.objects.filter(owner=user).aggregate(
             total=Count('id'),
-            published=Count('id', filter=Q(visibility=Visibility.PUBLIC)),
+            published=Count('id', filter=Q(published_at__isnull=False)),
         )
         data = {
             'my_documents': own['total'],
             'my_published': own['published'],
-            'public_documents': Document.objects.filter(visibility=Visibility.PUBLIC).count(),
+            'public_documents': Document.objects.filter(
+                visibility=Visibility.PUBLIC, published_at__isnull=False
+            ).count(),
         }
         if user.can_manage_catalog:
             from apps.accounts.models import User
 
-            data['total_documents'] = Document.objects.count()
-            data['total_private'] = Document.objects.filter(visibility=Visibility.PRIVATE).count()
-            data['total_users'] = User.objects.filter(is_active=True).count()
+            base = Document.objects.all()
+            users = User.objects.filter(is_active=True)
+            if not user.is_admin_role:
+                base = base.filter(institution_id=user.institution_id)
+                users = users.filter(institution_id=user.institution_id)
+            data['total_documents'] = base.count()
+            data['total_community'] = base.filter(visibility=Visibility.COMMUNITY).count()
+            data['total_restricted'] = base.filter(visibility=Visibility.RESTRICTED).count()
+            data['total_users'] = users.count()
         return Response(data)

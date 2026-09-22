@@ -6,7 +6,7 @@ from .models import Document
 class PublicDocumentFilter(filters.FilterSet):
     """Filtros do Acervo Público: instituição, curso, disciplina, categoria e autor."""
 
-    institution = filters.NumberFilter(field_name='subject__course__institution_id')
+    institution = filters.NumberFilter(field_name='institution_id')
     course = filters.NumberFilter(field_name='subject__course_id')
     subject = filters.NumberFilter(field_name='subject_id')
     category = filters.NumberFilter(field_name='category_id')

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -5,8 +6,13 @@ from django.utils.text import slugify
 class Institution(models.Model):
     """Instituição de ensino. Primeiro nível da organização acadêmica."""
 
+    class Type(models.TextChoices):
+        PUBLIC = 'public', 'Pública'
+        PRIVATE = 'private', 'Privada'
+
     name = models.CharField('nome', max_length=150, unique=True)
     acronym = models.CharField('sigla', max_length=20, blank=True)
+    type = models.CharField('tipo', max_length=10, choices=Type.choices, default=Type.PUBLIC)
     is_active = models.BooleanField('ativa', default=True)
     created_at = models.DateTimeField('criada em', auto_now_add=True)
 
@@ -61,6 +67,37 @@ class Subject(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.course.name})'
+
+
+class SubjectMember(models.Model):
+    """Vínculo de usuário com disciplina — sustenta o acesso Restrito."""
+
+    class Role(models.TextChoices):
+        STUDENT = 'student', 'Aluno'
+        TEACHER = 'teacher', 'Professor'
+
+    subject = models.ForeignKey(
+        Subject, verbose_name='disciplina', on_delete=models.CASCADE, related_name='members'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name='usuário',
+        on_delete=models.CASCADE,
+        related_name='subject_memberships',
+    )
+    role = models.CharField('papel', max_length=10, choices=Role.choices, default=Role.STUDENT)
+    created_at = models.DateTimeField('criado em', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'vínculo com disciplina'
+        verbose_name_plural = 'vínculos com disciplina'
+        ordering = ['subject', 'user']
+        constraints = [
+            models.UniqueConstraint(fields=['subject', 'user'], name='unique_subject_member'),
+        ]
+
+    def __str__(self):
+        return f'{self.user} — {self.subject}'
 
 
 class Category(models.Model):

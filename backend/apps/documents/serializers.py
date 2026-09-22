@@ -50,13 +50,8 @@ class DocumentSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True, default=None)
     subject_name = serializers.CharField(source='subject.name', read_only=True, default=None)
     course_name = serializers.CharField(source='subject.course.name', read_only=True, default=None)
-    institution_name = serializers.CharField(
-        source='subject.course.institution.name', read_only=True, default=None
-    )
+    institution_name = serializers.CharField(source='institution.name', read_only=True, default=None)
     course = serializers.IntegerField(source='subject.course_id', read_only=True, default=None)
-    institution = serializers.IntegerField(
-        source='subject.course.institution_id', read_only=True, default=None
-    )
     tags = serializers.SlugRelatedField(slug_field='name', many=True, read_only=True)
     visibility_display = serializers.CharField(source='get_visibility_display', read_only=True)
     extension = serializers.CharField(read_only=True)
@@ -83,17 +78,22 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 
 class DocumentWriteSerializer(serializers.ModelSerializer):
-    """Criação e edição. Todo documento novo nasce privado."""
+    """Criação e edição. Todo documento novo nasce em rascunho (não
+    publicado); a visibilidade escolhida vale a partir da publicação."""
 
     tags = DocumentTagField(required=False)
     file = serializers.FileField(required=True, validators=[validate_uploaded_file])
+    visibility = serializers.ChoiceField(choices=Visibility.choices, required=False)
 
     class Meta:
         model = Document
         fields = [
             'id', 'title', 'description', 'material_author',
-            'subject', 'category', 'tags', 'file',
+            'subject', 'category', 'institution', 'tags', 'file', 'visibility',
         ]
+        extra_kwargs = {
+            'institution': {'required': False},
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -107,6 +107,29 @@ class DocumentWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Informe o título do documento.')
         return value
 
+    def validate(self, attrs):
+        subject = attrs.get('subject', getattr(self.instance, 'subject', None))
+        visibility = attrs.get('visibility', getattr(self.instance, 'visibility', None))
+        if visibility == Visibility.RESTRICTED and not subject:
+            raise serializers.ValidationError(
+                {'subject': 'Visibilidade "Restrito" exige uma disciplina.'}
+            )
+
+        request = self.context['request']
+        institution = attrs.get('institution', getattr(self.instance, 'institution', None))
+        if institution is None:
+            institution = request.user.institution
+            if institution is None:
+                raise serializers.ValidationError(
+                    {'institution': 'Informe a instituição do documento.'}
+                )
+            attrs['institution'] = institution
+        if subject and subject.course.institution_id != institution.id:
+            raise serializers.ValidationError(
+                {'subject': 'A disciplina escolhida não pertence a essa instituição.'}
+            )
+        return attrs
+
     def _apply_file_metadata(self, instance, uploaded):
         instance.original_filename = uploaded.name[:255]
         instance.file_size = uploaded.size
@@ -114,9 +137,9 @@ class DocumentWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags = validated_data.pop('tags', [])
         uploaded = validated_data['file']
+        validated_data.setdefault('visibility', Visibility.COMMUNITY)
         document = Document(
             owner=self.context['request'].user,
-            visibility=Visibility.PRIVATE,
             **validated_data,
         )
         self._apply_file_metadata(document, uploaded)
