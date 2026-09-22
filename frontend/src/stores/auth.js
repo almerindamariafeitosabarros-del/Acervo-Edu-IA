@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('auth', {
     podePublicar: (state) => Boolean(state.user?.permissions?.can_publish_own),
     podeGerenciarCatalogo: (state) => Boolean(state.user?.permissions?.can_manage_catalog),
     podeGerenciarUsuarios: (state) => Boolean(state.user?.permissions?.can_manage_users),
+    podeModerarMural: (state) => Boolean(state.user?.permissions?.can_moderate_mural),
   },
   actions: {
     guardarSessao({ user, access, refresh }) {

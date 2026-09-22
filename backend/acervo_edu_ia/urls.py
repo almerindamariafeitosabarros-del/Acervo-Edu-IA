@@ -34,6 +34,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.accounts.urls')),
     path('api/ai/', include('apps.ai.urls')),
+    path('api/mural/', include('apps.mural.urls')),
     path('api/documents/public/', PublicDocumentListView.as_view(), name='document-public'),
     path('api/documents/all/', AllDocumentListView.as_view(), name='document-all'),
     path('api/documents/stats/', DocumentStatsView.as_view(), name='document-stats'),

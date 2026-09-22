@@ -29,13 +29,25 @@ const routes = [
         path: '',
         name: 'inicio',
         component: () => import('@/views/HomeView.vue'),
-        meta: { titulo: 'Início' },
+        meta: { titulo: 'Início', semSessao: true },
       },
       {
         path: 'acervo',
         name: 'acervo',
         component: () => import('@/views/PublicLibraryView.vue'),
-        meta: { titulo: 'Acervo Público' },
+        meta: { titulo: 'Acervo Público', semSessao: true },
+      },
+      {
+        path: 'mural',
+        name: 'mural',
+        component: () => import('@/views/MuralView.vue'),
+        meta: { titulo: 'Mural Público', semSessao: true },
+      },
+      {
+        path: 'moderacao',
+        name: 'moderacao',
+        component: () => import('@/views/ModerationView.vue'),
+        meta: { titulo: 'Moderação', exigePerfil: 'mural' },
       },
       {
         path: 'meus-documentos',
@@ -59,7 +71,7 @@ const routes = [
         path: 'documentos/:id',
         name: 'documento-detalhes',
         component: () => import('@/views/DocumentDetailView.vue'),
-        meta: { titulo: 'Detalhes do documento' },
+        meta: { titulo: 'Detalhes do documento', semSessao: true },
       },
       {
         path: 'assistente',
@@ -111,7 +123,11 @@ router.beforeEach(async (to) => {
     return { name: 'entrar', query: { proxima: to.fullPath } }
   }
 
-  if (to.meta.exigePerfil === 'catalogo' && !auth.podeGerenciarCatalogo) {
+  const exigencias = {
+    catalogo: auth.podeGerenciarCatalogo,
+    mural: auth.podeModerarMural,
+  }
+  if (to.meta.exigePerfil && !exigencias[to.meta.exigePerfil]) {
     return { name: 'inicio' }
   }
 

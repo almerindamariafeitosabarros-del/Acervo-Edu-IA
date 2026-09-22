@@ -35,6 +35,16 @@ class ReadOnlyOrManager(BasePermission):
         return user.can_manage_catalog
 
 
+class IsModeratorOrAdmin(BasePermission):
+    """Moderador e Administrador."""
+
+    message = 'Apenas Moderador ou Administrador pode executar esta ação.'
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(user and user.is_authenticated and user.can_moderate_mural)
+
+
 class ReadOnlyOrAdmin(BasePermission):
     """Leitura para qualquer usuário autenticado; escrita apenas para Admin."""
 
