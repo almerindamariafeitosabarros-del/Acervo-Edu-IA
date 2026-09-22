@@ -1,0 +1,446 @@
+:root {
+  /* Cores institucionais — Manual de Marca Acervo Edu IA v1.0 */
+  --cor-marinho: #123b66;
+  --cor-marinho-profundo: #0e2f52;
+  --cor-azul: #1976a8;
+  --cor-azul-suave: #e4effa;
+  --cor-texto-sobre-marinho: #cfe0f2;
+  --degrade-institucional: linear-gradient(135deg, var(--cor-marinho) 0%, var(--cor-azul) 100%);
+
+  --cor-fundo: #f4f7fb;
+  --cor-superficie: #ffffff;
+  --cor-borda: #e1e8f0;
+  --cor-texto: #1f2d3d;
+  --cor-texto-suave: #56667a;
+
+  --cor-primaria: var(--cor-azul);
+  --cor-primaria-escura: var(--cor-marinho);
+  --cor-primaria-clara: var(--cor-azul-suave);
+
+  --cor-sucesso: #1d7a3e;
+  --cor-sucesso-clara: #e3f6ea;
+  --cor-alerta: #a8570f;
+  --cor-alerta-clara: #fdeede;
+  --cor-erro: #c0392b;
+  --cor-erro-clara: #fbeae8;
+
+  /* Selos de visibilidade e de instituição (manual, seção 07) */
+  --selo-publico-texto: #1d7a3e;
+  --selo-publico-fundo: #e3f6ea;
+  --selo-comunidade-texto: #1a5f96;
+  --selo-comunidade-fundo: #e4effa;
+  --selo-restrito-texto: #a8570f;
+  --selo-restrito-fundo: #fdeede;
+  --selo-inst-publica-texto: #34495e;
+  --selo-inst-publica-fundo: #eaf0f6;
+  --selo-inst-privada-texto: #6b3fa0;
+  --selo-inst-privada-fundo: #f1e9fb;
+
+  --fonte: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --raio-sm: 6px;
+  --raio-md: 8px;
+  --raio-lg: 12px;
+  --raio-xl: 16px;
+  --raio-pill: 999px;
+  --raio: var(--raio-md);
+  --sombra: 0 1px 3px rgba(18, 59, 102, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------- Acessibilidade (WCAG 2.1)
+   Foco sempre visível ao navegar por teclado (critério 2.4.7). O :focus-visible
+   evita o anel de foco no clique do mouse, sem prejudicar quem usa Tab. */
+:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Conteúdo só para leitores de tela (critério 1.3.1). */
+.apenas-leitor-de-tela {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Link "Pular para o conteúdo": invisível até receber o foco (critério 2.4.1). */
+.pular-conteudo {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.7rem 1rem;
+  background: var(--cor-primaria);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0 0 var(--raio) 0;
+}
+
+.pular-conteudo:focus {
+  left: 0;
+  text-decoration: none;
+}
+
+/* Respeita quem pediu menos animação no sistema (critério 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Reforça as bordas em modo de alto contraste do Windows. */
+@media (forced-colors: active) {
+  .botao,
+  .cartao,
+  input,
+  select,
+  textarea {
+    border: 1px solid;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4 {
+  margin: 0 0 0.5rem;
+  line-height: 1.25;
+  color: var(--cor-marinho);
+}
+
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+
+a {
+  color: var(--cor-primaria);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Link dentro de texto corrido não pode se distinguir apenas pela cor
+   (critério 1.4.1): sublinhamos sempre. Links de navegação e botões ficam de
+   fora, porque a própria posição e o formato já os identificam. */
+p a,
+li a,
+td a,
+dd a,
+caption a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+p a.botao,
+li a.botao,
+td a.botao {
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------- Formulários */
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  color: var(--cor-texto);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  font: inherit;
+  background: #fff;
+  color: var(--cor-texto);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--cor-primaria-clara);
+  border-color: var(--cor-primaria);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: #f1f3f8;
+  color: var(--cor-texto-suave);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.campo {
+  margin-bottom: 1rem;
+}
+
+.campo-ajuda {
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+  margin-top: 0.25rem;
+}
+
+/* Erro nunca é indicado só pela cor: vem com texto e ícone (critério 1.4.1). */
+.campo-erro {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--cor-erro);
+  margin-top: 0.25rem;
+  font-weight: 600;
+}
+
+input[aria-invalid='true'],
+select[aria-invalid='true'],
+textarea[aria-invalid='true'] {
+  border-color: var(--cor-erro);
+  border-width: 2px;
+}
+
+/* Marca o campo obrigatório de forma legível por leitores de tela. */
+.obrigatorio {
+  color: var(--cor-erro);
+  font-weight: 700;
+}
+
+.linha-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0 1rem;
+}
+
+/* -------------------------------------------------------------------- Botões */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--raio);
+  background: var(--cor-primaria);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.botao:hover:not(:disabled) {
+  background: var(--cor-primaria-escura);
+  text-decoration: none;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.botao-secundario {
+  background: #fff;
+  color: var(--cor-primaria);
+  border-color: var(--cor-borda);
+}
+
+.botao-secundario:hover:not(:disabled) {
+  background: var(--cor-primaria-clara);
+}
+
+.botao-perigo {
+  background: var(--cor-erro);
+}
+
+.botao-perigo:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.botao-pequeno {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  min-height: 32px;
+}
+
+/* Área de toque confortável no celular (critério 2.5.5). */
+.botao {
+  min-height: 40px;
+}
+
+/* ------------------------------------------------------------------- Cartões */
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  padding: 1.25rem;
+  box-shadow: var(--sombra);
+}
+
+.grade-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+}
+
+/* --------------------------------------------------------------------- Selos */
+.selo {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--raio-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Público: qualquer pessoa, sem login. */
+.selo-publico {
+  background: var(--selo-publico-fundo);
+  color: var(--selo-publico-texto);
+}
+
+/* Comunidade da instituição: autenticados da mesma instituição. */
+.selo-comunidade {
+  background: var(--selo-comunidade-fundo);
+  color: var(--selo-comunidade-texto);
+}
+
+/* Restrito: membros da disciplina, gestor/admin e o autor. */
+.selo-restrito {
+  background: var(--selo-restrito-fundo);
+  color: var(--selo-restrito-texto);
+}
+
+/* Tag/categoria informativa (não é nível de visibilidade). */
+.selo-neutro {
+  background: var(--selo-comunidade-fundo);
+  color: var(--selo-comunidade-texto);
+}
+
+/* Rascunho/Publicado abaixo do selo de visibilidade (published_at). */
+.situacao {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+}
+
+/* ------------------------------------------------------------------ Mensagens */
+.mensagem {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--raio);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  border-left: 4px solid currentColor;
+}
+
+.mensagem-erro {
+  background: var(--cor-erro-clara);
+  color: var(--cor-erro);
+}
+
+.mensagem-sucesso {
+  background: var(--cor-sucesso-clara);
+  color: var(--cor-sucesso);
+}
+
+.mensagem-aviso {
+  background: var(--cor-alerta-clara);
+  color: var(--cor-alerta);
+}
+
+.texto-suave {
+  color: var(--cor-texto-suave);
+}
+
+.vazio {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--cor-texto-suave);
+}
+
+/* ------------------------------------------------------------------- Tabelas */
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabela th,
+.tabela td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--cor-borda);
+  vertical-align: middle;
+}
+
+.tabela th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--cor-texto-suave);
+}
+
+.rolagem-horizontal {
+  overflow-x: auto;
+}
+
+/* ------------------------------------------------------------------ Utilidades */
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.entre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Espaçador que alinha um botão ao lado de campos com rótulo, sem fingir ser
+   um rótulo de formulário (o que confundiria leitores de tela). */
+.rotulo-vazio {
+  display: block;
+  height: 1.15rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Legenda de tabela: presente para leitores de tela, escondida visualmente. */
+.tabela caption {
+  text-align: left;
+}
