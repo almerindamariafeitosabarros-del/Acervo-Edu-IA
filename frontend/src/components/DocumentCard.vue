@@ -1,7 +1,7 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 
-import { formatarData } from '@/services/formatos'
+import { formatarData, seloVisibilidade } from '@/services/formatos'
 
 defineProps({
   documento: { type: Object, required: true },
@@ -15,12 +15,8 @@ defineProps({
       <RouterLink :to="{ name: 'documento-detalhes', params: { id: documento.id } }" class="titulo">
         {{ documento.title }}
       </RouterLink>
-      <span
-        v-if="mostrarVisibilidade"
-        class="selo"
-        :class="documento.visibility === 'public' ? 'selo-publico' : 'selo-privado'"
-      >
-        {{ documento.visibility === 'public' ? 'Público' : 'Privado' }}
+      <span v-if="mostrarVisibilidade" class="selo" :class="seloVisibilidade(documento.visibility)">
+        {{ documento.visibility_display }}
       </span>
     </header>
 

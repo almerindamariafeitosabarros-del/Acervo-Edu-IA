@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router'
 
 import PaginacaoSimples from '@/components/PaginacaoSimples.vue'
 import api, { mensagemDeErro } from '@/services/api'
-import { formatarData } from '@/services/formatos'
+import { formatarData, seloVisibilidade } from '@/services/formatos'
 import { useCatalogoStore } from '@/stores/catalogo'
 
 const catalogo = useCatalogoStore()
@@ -47,16 +47,16 @@ function mudarPagina(nova) {
 }
 
 async function alternarPublicacao(documento) {
-  const publicar = documento.visibility !== 'public'
+  const publicar = !documento.published_at
   if (publicar) {
     const confirmado = window.confirm(
-      'Todos os usuários cadastrados poderão ver e baixar este documento.',
+      `Documento visível conforme a visibilidade "${documento.visibility_display}".`,
     )
     if (!confirmado) return
   }
   try {
     await api.post(`/documents/${documento.id}/${publicar ? 'publish' : 'unpublish'}/`)
-    aviso.value = publicar ? 'Documento publicado.' : 'Documento removido do Acervo Público.'
+    aviso.value = publicar ? 'Documento publicado.' : 'Documento despublicado.'
     carregar()
   } catch (error) {
     erro.value = mensagemDeErro(error, 'Não foi possível alterar a publicação.')
@@ -94,8 +94,9 @@ onMounted(async () => {
         <label for="a-visibilidade">Visibilidade</label>
         <select id="a-visibilidade" v-model="filtros.visibility">
           <option value="">Todas</option>
-          <option value="private">Privados</option>
-          <option value="public">Públicos</option>
+          <option value="public">Público</option>
+          <option value="community">Comunidade</option>
+          <option value="restricted">Restrito</option>
         </select>
       </div>
       <div class="campo">
@@ -147,11 +148,11 @@ onMounted(async () => {
               <td class="texto-suave">{{ documento.owner_name }}</td>
               <td class="texto-suave">{{ documento.subject_name || '—' }}</td>
               <td>
-                <span
-                  class="selo"
-                  :class="documento.visibility === 'public' ? 'selo-publico' : 'selo-privado'"
-                >
+                <span class="selo" :class="seloVisibilidade(documento.visibility)">
                   {{ documento.visibility_display }}
+                </span>
+                <span class="texto-suave situacao">
+                  {{ documento.published_at ? 'Publicado' : 'Rascunho' }}
                 </span>
               </td>
               <td class="texto-suave">{{ formatarData(documento.created_at) }}</td>
@@ -162,7 +163,7 @@ onMounted(async () => {
                     class="botao botao-secundario botao-pequeno"
                     @click="alternarPublicacao(documento)"
                   >
-                    {{ documento.visibility === 'public' ? 'Despublicar' : 'Publicar' }}
+                    {{ documento.published_at ? 'Despublicar' : 'Publicar' }}
                   </button>
                   <button
                     type="button"

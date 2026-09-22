@@ -27,3 +27,14 @@ export function formatarDuracao(ms) {
   if (!ms) return '—'
   return `${(ms / 1000).toFixed(1).replace('.', ',')} s`
 }
+
+const SELO_VISIBILIDADE = {
+  public: 'selo-publico',
+  community: 'selo-comunidade',
+  restricted: 'selo-restrito',
+}
+
+/** Classe CSS do selo (Público/Comunidade/Restrito) para um documento. */
+export function seloVisibilidade(visibility) {
+  return SELO_VISIBILIDADE[visibility] || 'selo-neutro'
+}

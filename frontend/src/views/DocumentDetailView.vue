@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import api, { mensagemDeErro } from '@/services/api'
-import { formatarDataHora, formatarTamanho } from '@/services/formatos'
+import { formatarDataHora, formatarTamanho, seloVisibilidade } from '@/services/formatos'
 
 const route = useRoute()
 const router = useRouter()
@@ -54,10 +54,10 @@ async function baixar() {
 }
 
 async function alternarPublicacao() {
-  const publicar = documento.value.visibility !== 'public'
+  const publicar = !documento.value.published_at
   if (publicar) {
     const confirmado = window.confirm(
-      'Todos os usuários cadastrados poderão ver e baixar este documento.',
+      `Documento visível conforme a visibilidade "${documento.value.visibility_display}".`,
     )
     if (!confirmado) return
   }
@@ -66,9 +66,7 @@ async function alternarPublicacao() {
       `/documents/${documento.value.id}/${publicar ? 'publish' : 'unpublish'}/`,
     )
     documento.value = data
-    aviso.value = publicar
-      ? 'Documento publicado no Acervo Público.'
-      : 'Documento removido do Acervo Público.'
+    aviso.value = publicar ? 'Documento publicado.' : 'Documento despublicado.'
   } catch (error) {
     erro.value = mensagemDeErro(error, 'Não foi possível alterar a publicação.')
   }
@@ -117,11 +115,11 @@ onUnmounted(() => {
             Enviado por {{ documento.owner_name }} em {{ formatarDataHora(documento.created_at) }}
           </p>
         </div>
-        <span
-          class="selo"
-          :class="documento.visibility === 'public' ? 'selo-publico' : 'selo-privado'"
-        >
+        <span class="selo" :class="seloVisibilidade(documento.visibility)">
           {{ documento.visibility_display }}
+        </span>
+        <span class="selo selo-neutro">
+          {{ documento.published_at ? 'Publicado' : 'Rascunho' }}
         </span>
       </header>
 
@@ -151,7 +149,7 @@ onUnmounted(() => {
           type="button"
           @click="alternarPublicacao"
         >
-          {{ documento.visibility === 'public' ? 'Remover do Acervo Público' : 'Publicar' }}
+          {{ documento.published_at ? 'Despublicar' : 'Publicar' }}
         </button>
         <button
           v-if="documento.permissions.can_edit"

@@ -25,6 +25,7 @@ const form = reactive({
   subject: '',
   category: '',
   tags: '',
+  visibility: 'community',
 })
 
 // Enquanto o formulário é preenchido a partir da API, os campos encadeados
@@ -60,6 +61,7 @@ async function carregarDocumento() {
   form.material_author = data.material_author || ''
   form.category = data.category || ''
   form.tags = (data.tags || []).join(', ')
+  form.visibility = data.visibility
   arquivoAtual.value = data.original_filename
 
   if (data.subject) {
@@ -78,11 +80,16 @@ async function salvar() {
     erro.value = 'Escolha o arquivo do documento.'
     return
   }
+  if (form.visibility === 'restricted' && !form.subject) {
+    erro.value = 'Visibilidade "Restrito" exige uma disciplina.'
+    return
+  }
 
   const dados = new FormData()
   dados.append('title', form.title)
   dados.append('description', form.description)
   dados.append('material_author', form.material_author)
+  dados.append('visibility', form.visibility)
   if (form.subject) dados.append('subject', form.subject)
   if (form.category) dados.append('category', form.category)
   if (form.tags) dados.append('tags', form.tags)
@@ -190,6 +197,29 @@ onMounted(async () => {
         <p class="campo-ajuda">Separe por vírgula.</p>
       </div>
 
+      <fieldset class="campo">
+        <legend>Quem pode ver?</legend>
+        <label class="opcao-visibilidade">
+          <input v-model="form.visibility" type="radio" value="public" />
+          <span><strong>Público</strong> — qualquer pessoa, inclusive sem login.</span>
+        </label>
+        <label class="opcao-visibilidade">
+          <input v-model="form.visibility" type="radio" value="community" />
+          <span
+            ><strong>Comunidade da instituição</strong>
+            <span class="selo selo-neutro">padrão</span> — alunos, professores e equipe
+            autenticados.</span
+          >
+        </label>
+        <label class="opcao-visibilidade">
+          <input v-model="form.visibility" type="radio" value="restricted" />
+          <span><strong>Restrito</strong> — somente a turma/disciplina escolhida e os gestores.</span>
+        </label>
+        <p v-if="form.visibility === 'restricted' && !form.subject" class="campo-erro">
+          Escolha uma disciplina acima para usar a visibilidade Restrito.
+        </p>
+      </fieldset>
+
       <div class="campo">
         <label for="arquivo">
           Arquivo
@@ -221,3 +251,17 @@ onMounted(async () => {
     </form>
   </div>
 </template>
+
+<style scoped>
+.opcao-visibilidade {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+}
+
+.opcao-visibilidade input {
+  margin-top: 0.2rem;
+}
+</style>
