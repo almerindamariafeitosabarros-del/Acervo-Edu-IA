@@ -44,7 +44,7 @@ class DocumentTestBase(APITestCase):
             email='outro@t.com', password='x', name='Outro', role=Role.STUDENT
         )
 
-    def criar_documento(self, owner=None, visibility=Visibility.PRIVATE, title='Documento'):
+    def criar_documento(self, owner=None, visibility=Visibility.RESTRICTED, title='Documento'):
         documento = Document.objects.create(
             title=title,
             owner=owner or self.aluno,
@@ -75,7 +75,7 @@ class DocumentCrudTests(DocumentTestBase):
             format='multipart',
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
-        self.assertEqual(response.data['visibility'], Visibility.PRIVATE)
+        self.assertEqual(response.data['visibility'], Visibility.RESTRICTED)
         self.assertCountEqual(response.data['tags'], ['prova', 'revisão'])
 
     def test_upload_recusa_extensao_invalida(self):
@@ -174,7 +174,7 @@ class PublicationTests(DocumentTestBase):
         response = self.client.post(f'/api/documents/{documento.id}/publish/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         documento.refresh_from_db()
-        self.assertEqual(documento.visibility, Visibility.PRIVATE)
+        self.assertEqual(documento.visibility, Visibility.RESTRICTED)
 
     def test_professor_publica_e_despublica_o_proprio(self):
         documento = self.criar_documento(owner=self.professor)

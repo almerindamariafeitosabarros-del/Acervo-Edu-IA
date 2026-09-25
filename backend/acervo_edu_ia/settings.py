@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'apps.academics',
     'apps.documents',
     'apps.ai',
-    'apps.mural',
 ]
 
 MIDDLEWARE = [
@@ -175,14 +174,6 @@ CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
 MAX_UPLOAD_SIZE_MB = env_int('MAX_UPLOAD_SIZE_MB', 25)
 MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
 ALLOWED_UPLOAD_EXTENSIONS = ['pdf', 'docx', 'pptx', 'txt']
-
-# Anexos do mural público (RNF14): limite menor e extensões mais amplas
-# (inclui imagens), conforme seção 10.2/16 do PRD.
-MURAL_MAX_ATTACHMENT_SIZE_MB = env_int('MURAL_MAX_ATTACHMENT_SIZE_MB', 20)
-MURAL_MAX_ATTACHMENT_SIZE_BYTES = MURAL_MAX_ATTACHMENT_SIZE_MB * 1024 * 1024
-MURAL_ALLOWED_ATTACHMENT_EXTENSIONS = [
-    'pdf', 'docx', 'pptx', 'xlsx', 'txt', 'png', 'jpg', 'jpeg', 'gif', 'webp',
-]
 
 # Assistente de IA local (Ollama)
 OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434').rstrip('/')

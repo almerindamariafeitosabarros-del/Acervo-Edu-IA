@@ -6,7 +6,6 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListAPIView
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -40,10 +39,13 @@ class MyDocumentViewSet(viewsets.ModelViewSet):
 
 
 class PublicDocumentListView(ListAPIView):
-    """/api/documents/public/ — Acervo Público, aberto a visitantes sem login (RF18)."""
+    """/api/documents/public/ — Acervo Público, visível a todos os cadastrados.
+
+    Exige login: ao publicar, o usuário confirma que "todos os usuários
+    cadastrados poderão ver e baixar este documento" — não o público em geral.
+    """
 
     serializer_class = DocumentSerializer
-    permission_classes = [AllowAny]
     filterset_class = PublicDocumentFilter
     search_fields = SEARCH_FIELDS
     ordering_fields = ['published_at', 'created_at', 'title']
@@ -82,12 +84,8 @@ class DocumentDetailViewSet(
     """/api/documents/{id}/ — detalhar, editar, excluir, publicar e baixar.
 
     Documento privado de outro usuário responde 404 (não revela a existência).
-    O cadastro de documentos é feito por /api/documents/mine/. Visitantes sem
-    login acessam documentos PÚBLICOS (RF18, RF24); edição/exclusão continuam
-    exigindo autenticação via can_be_edited_by.
+    O cadastro de documentos é feito por /api/documents/mine/.
     """
-
-    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action in ('update', 'partial_update'):
@@ -97,7 +95,7 @@ class DocumentDetailViewSet(
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
-            return BASE_QUERYSET.filter(visibility=Visibility.PUBLIC, published_at__isnull=False)
+            return Document.objects.none()
         queryset = BASE_QUERYSET.all()
         if user.is_admin_role:
             return queryset

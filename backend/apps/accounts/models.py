@@ -8,7 +8,6 @@ class Role(models.TextChoices):
 
     STUDENT = 'student', 'Aluno'
     TEACHER = 'teacher', 'Professor'
-    MODERATOR = 'moderator', 'Moderador'
     MANAGER = 'manager', 'Gestor'
     ADMIN = 'admin', 'Administrador'
 
@@ -20,11 +19,8 @@ TERMS_VERSION = '1.0'
 
 
 # Ordem hierárquica usada pelas permissões (quanto maior, mais poderes).
-# Moderador não participa da hierarquia acadêmica (não publica nem gerencia
-# catálogo por causa do cargo): seu poder vem só de can_moderate_mural.
 ROLE_LEVEL = {
     Role.STUDENT: 1,
-    Role.MODERATOR: 1,
     Role.TEACHER: 2,
     Role.MANAGER: 3,
     Role.ADMIN: 4,
@@ -126,15 +122,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin_role(self):
         return self.role == Role.ADMIN
-
-    @property
-    def is_moderator(self):
-        return self.role == Role.MODERATOR
-
-    @property
-    def can_moderate_mural(self):
-        """Moderador e Administrador ocultam/mantêm publicações e analisam denúncias (RF22)."""
-        return self.is_moderator or self.is_admin_role
 
     @property
     def can_publish_own(self):

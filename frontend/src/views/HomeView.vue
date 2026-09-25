@@ -1,65 +1,46 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import DocumentCard from '@/components/DocumentCard.vue'
 import api, { mensagemDeErro } from '@/services/api'
-import { formatarData } from '@/services/formatos'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const contadores = ref(null)
 const recentes = ref([])
-const muralRecente = ref([])
 const carregando = ref(true)
 const erro = ref('')
 
-const atalhos = computed(() => {
-  const base = [
-    {
-      nome: 'acervo',
-      titulo: 'Acervo Público',
-      texto: 'Pesquise materiais publicados por outras instituições.',
-      icone: '📚',
-    },
-    {
-      nome: 'mural',
-      titulo: 'Mural Público',
-      texto: 'Veja o que a comunidade está compartilhando.',
-      icone: '📣',
-    },
-  ]
-  if (auth.autenticado) {
-    base.push(
-      {
-        nome: 'meus-documentos',
-        titulo: 'Meus Documentos',
-        texto: 'Cadastre e organize seus próprios materiais.',
-        icone: '📁',
-      },
-      {
-        nome: 'assistente',
-        titulo: 'Assistente IA',
-        texto: 'Pergunte sobre um documento e receba a resposta na hora.',
-        icone: '🤖',
-      },
-    )
-  }
-  return base
-})
+const atalhos = [
+  {
+    nome: 'acervo',
+    titulo: 'Acervo Público',
+    texto: 'Pesquise materiais publicados por outras instituições.',
+    icone: '📚',
+  },
+  {
+    nome: 'meus-documentos',
+    titulo: 'Meus Documentos',
+    texto: 'Cadastre e organize seus próprios materiais.',
+    icone: '📁',
+  },
+  {
+    nome: 'assistente',
+    titulo: 'Assistente IA',
+    texto: 'Pergunte sobre um documento e receba a resposta na hora.',
+    icone: '🤖',
+  },
+]
 
 onMounted(async () => {
   try {
-    const chamadas = [
+    const [publicos, stats] = await Promise.all([
       api.get('/documents/public/', { params: { page_size: 6 } }),
-      api.get('/mural/posts/', { params: { page_size: 3 } }),
-    ]
-    if (auth.autenticado) chamadas.push(api.get('/documents/stats/'))
-
-    const [publicos, mural, stats] = await Promise.all(chamadas)
+      api.get('/documents/stats/'),
+    ])
     recentes.value = publicos.data.results.slice(0, 6)
-    muralRecente.value = mural.data.results
-    if (stats) contadores.value = stats.data
+    contadores.value = stats.data
   } catch (error) {
     erro.value = mensagemDeErro(error, 'Não foi possível carregar a tela de início.')
   } finally {
@@ -71,22 +52,11 @@ onMounted(async () => {
 <template>
   <div class="pilha">
     <header>
-      <template v-if="auth.autenticado">
-        <h1>Olá, {{ auth.user?.name?.split(' ')[0] }}! <span aria-hidden="true">👋</span></h1>
-        <p class="texto-suave">
-          Você está no perfil <strong>{{ auth.perfilTexto }}</strong
-          >.
-        </p>
-      </template>
-      <template v-else>
-        <h1>Conhecimento organizado e acessível</h1>
-        <p class="texto-suave">
-          Acervo educacional para instituições públicas e privadas — documentos abertos e mural
-          público de compartilhamento. Sem login você vê os documentos <strong>públicos</strong> e o
-          <strong>mural público</strong>. <RouterLink :to="{ name: 'entrar' }">Entre</RouterLink>
-          para acessar o acervo da sua instituição.
-        </p>
-      </template>
+      <h1>Olá, {{ auth.user?.name?.split(' ')[0] }}! <span aria-hidden="true">👋</span></h1>
+      <p class="texto-suave">
+        Você está no perfil <strong>{{ auth.perfilTexto }}</strong
+        >.
+      </p>
     </header>
 
     <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
@@ -150,20 +120,6 @@ onMounted(async () => {
       </div>
     </section>
 
-    <section aria-labelledby="titulo-mural">
-      <div class="entre">
-        <h2 id="titulo-mural">Mural público</h2>
-        <RouterLink :to="{ name: 'mural' }">Abrir mural →</RouterLink>
-      </div>
-      <p v-if="!carregando && !muralRecente.length" class="vazio">Ainda não há publicações.</p>
-      <ul v-else class="lista-mural-previa">
-        <li v-for="post in muralRecente" :key="post.id" class="cartao">
-          <strong>{{ post.author_name }}</strong>
-          <span class="texto-suave"> · {{ formatarData(post.created_at) }}</span>
-          <p>{{ post.text || '(publicação com anexo)' }}</p>
-        </li>
-      </ul>
-    </section>
   </div>
 </template>
 
@@ -226,18 +182,5 @@ onMounted(async () => {
 
 .icone {
   font-size: 1.6rem;
-}
-
-.lista-mural-previa {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.lista-mural-previa p {
-  margin: 0.35rem 0 0;
 }
 </style>

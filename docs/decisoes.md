@@ -121,3 +121,18 @@ optamos sempre pela solução mais simples que atende ao requisito.
 - **Verificação:** auditoria com axe-core nas 11 telas (0 violações WCAG 2.1 A/AA) mais
   checagens de teclado — skip link, foco visível, rótulos, hierarquia de títulos, zoom de
   200% sem rolagem horizontal e anúncio de troca de tela.
+
+## Remoção do Mural Público
+
+- **O Mural saiu do projeto**, e com ele o **papel Moderador** e a tela de Moderação, que
+  existiam só para moderar as publicações (`can_moderate_mural`, `/mural/moderation/`).
+  Contas que estavam como Moderador voltam a ser Aluno na migração `accounts.0004`.
+- **O Acervo Público voltou a exigir login.** O `AllowAny` que o Mural trouxe abria a
+  listagem e o detalhe de documento para visitantes. Isso contraria a confirmação que o
+  usuário aceita ao publicar — *"todos os usuários **cadastrados** poderão ver e baixar
+  este documento"* — e, para a LGPD, mudaria a base do consentimento já registrado. Só
+  `/privacidade` e `/acessibilidade` seguem abertas, porque precisam ser lidas antes do
+  cadastro.
+- **As tabelas do Mural são removidas pela própria migração** (`DROP TABLE IF EXISTS`),
+  junto com os registros órfãos em `django_migrations`. Assim quem já tinha migrado o
+  banco não fica com tabelas soltas, e quem está começando do zero não vê diferença.

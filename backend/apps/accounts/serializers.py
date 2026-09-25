@@ -29,7 +29,6 @@ class UserSerializer(serializers.ModelSerializer):
             'can_publish_own': obj.can_publish_own,
             'can_manage_catalog': obj.can_manage_catalog,
             'can_manage_users': obj.can_manage_users,
-            'can_moderate_mural': obj.can_moderate_mural,
         }
 
 

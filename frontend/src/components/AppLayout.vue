@@ -36,24 +36,15 @@ watch(
   },
 )
 
-// O menu mostra apenas as telas permitidas ao perfil. Início, Acervo Público
-// e Mural também abrem para visitantes sem login (RF18, RF20).
+// O menu mostra apenas as telas permitidas ao perfil.
 const itens = computed(() => {
   const base = [
     { nome: 'inicio', rotulo: 'Início', icone: '🏠' },
     { nome: 'acervo', rotulo: 'Acervo Público', icone: '📚' },
-    { nome: 'mural', rotulo: 'Mural Público', icone: '📣' },
+    { nome: 'meus-documentos', rotulo: 'Meus Documentos', icone: '📁' },
+    { nome: 'assistente', rotulo: 'Assistente IA', icone: '🤖' },
+    { nome: 'perfil', rotulo: 'Meu Perfil', icone: '👤' },
   ]
-  if (auth.autenticado) {
-    base.push(
-      { nome: 'meus-documentos', rotulo: 'Meus Documentos', icone: '📁' },
-      { nome: 'assistente', rotulo: 'Assistente IA', icone: '🤖' },
-      { nome: 'perfil', rotulo: 'Meu Perfil', icone: '👤' },
-    )
-  }
-  if (auth.podeModerarMural) {
-    base.push({ nome: 'moderacao', rotulo: 'Moderação', icone: '🚩' })
-  }
   if (auth.podeGerenciarCatalogo) {
     base.push({ nome: 'administracao', rotulo: 'Administração', icone: '⚙️' })
   }
@@ -129,19 +120,16 @@ function sair() {
         </form>
 
         <div class="usuario-topo">
-          <template v-if="auth.autenticado">
-            <RouterLink :to="{ name: 'perfil' }" class="cartao-usuario">
-              <span class="avatar" aria-hidden="true">{{ iniciais || '?' }}</span>
-              <span class="dados-usuario">
-                <span class="nome-usuario">{{ auth.user?.name }}</span>
-                <span class="perfil-usuario">{{ auth.perfilTexto }}</span>
-              </span>
-            </RouterLink>
-            <button type="button" class="botao botao-secundario botao-pequeno" @click="sair">
-              Sair
-            </button>
-          </template>
-          <RouterLink v-else class="botao botao-pequeno" :to="{ name: 'entrar' }">Entrar</RouterLink>
+          <RouterLink :to="{ name: 'perfil' }" class="cartao-usuario">
+            <span class="avatar" aria-hidden="true">{{ iniciais || '?' }}</span>
+            <span class="dados-usuario">
+              <span class="nome-usuario">{{ auth.user?.name }}</span>
+              <span class="perfil-usuario">{{ auth.perfilTexto }}</span>
+            </span>
+          </RouterLink>
+          <button type="button" class="botao botao-secundario botao-pequeno" @click="sair">
+            Sair
+          </button>
         </div>
       </header>
 

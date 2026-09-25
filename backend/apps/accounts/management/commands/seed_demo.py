@@ -9,7 +9,6 @@ from django.db import transaction
 from apps.academics.models import Category, Course, Institution, Subject, Tag
 from apps.accounts.models import Role, User
 from apps.documents.models import Document, Visibility
-from apps.mural.models import MuralPost
 
 SENHA_PADRAO = 'acervo123'
 
@@ -18,13 +17,6 @@ USUARIOS = [
     ('Gabriela Gestora', 'gestor@acervo.edu', Role.MANAGER),
     ('Paulo Professor', 'professor@acervo.edu', Role.TEACHER),
     ('Ana Aluna', 'aluno@acervo.edu', Role.STUDENT),
-    ('Marcos Moderador', 'moderador@acervo.edu', Role.MODERATOR),
-]
-
-MURAL_POSTS = [
-    ('professor', 'Compartilho a lista de exercícios de Cálculo I para quem estiver revisando.'),
-    ('aluno', 'Alguém tem dica de material sobre redes neurais? Estou começando agora.'),
-    ('gestor', 'Lembrete: inscrições para a semana acadêmica abrem semana que vem.'),
 ]
 
 CATEGORIAS = [
@@ -174,22 +166,9 @@ class Command(BaseCommand):
                 documento.publish()
             criados += 1
 
-        autores_mural = {
-            'professor': usuarios[Role.TEACHER],
-            'aluno': usuarios[Role.STUDENT],
-            'gestor': usuarios[Role.MANAGER],
-        }
-        posts_criados = 0
-        for chave, texto in MURAL_POSTS:
-            autor = autores_mural[chave]
-            if not MuralPost.objects.filter(author=autor, text=texto).exists():
-                MuralPost.objects.create(author=autor, text=texto)
-                posts_criados += 1
-
         self.stdout.write(self.style.SUCCESS(
             f'Dados de exemplo prontos: {len(usuarios)} usuários, '
-            f'{len(disciplinas)} disciplinas, {criados} documentos novos, '
-            f'{posts_criados} publicações no mural.'
+            f'{len(disciplinas)} disciplinas, {criados} documentos novos.'
         ))
         self.stdout.write('')
         self.stdout.write('Contas de teste (senha: %s):' % SENHA_PADRAO)

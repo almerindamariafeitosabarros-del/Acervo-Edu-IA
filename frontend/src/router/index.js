@@ -29,25 +29,13 @@ const routes = [
         path: '',
         name: 'inicio',
         component: () => import('@/views/HomeView.vue'),
-        meta: { titulo: 'Início', semSessao: true },
+        meta: { titulo: 'Início' },
       },
       {
         path: 'acervo',
         name: 'acervo',
         component: () => import('@/views/PublicLibraryView.vue'),
-        meta: { titulo: 'Acervo Público', semSessao: true },
-      },
-      {
-        path: 'mural',
-        name: 'mural',
-        component: () => import('@/views/MuralView.vue'),
-        meta: { titulo: 'Mural Público', semSessao: true },
-      },
-      {
-        path: 'moderacao',
-        name: 'moderacao',
-        component: () => import('@/views/ModerationView.vue'),
-        meta: { titulo: 'Moderação', exigePerfil: 'mural' },
+        meta: { titulo: 'Acervo Público' },
       },
       {
         path: 'meus-documentos',
@@ -71,7 +59,7 @@ const routes = [
         path: 'documentos/:id',
         name: 'documento-detalhes',
         component: () => import('@/views/DocumentDetailView.vue'),
-        meta: { titulo: 'Detalhes do documento', semSessao: true },
+        meta: { titulo: 'Detalhes do documento' },
       },
       {
         path: 'assistente',
@@ -125,7 +113,6 @@ router.beforeEach(async (to) => {
 
   const exigencias = {
     catalogo: auth.podeGerenciarCatalogo,
-    mural: auth.podeModerarMural,
   }
   if (to.meta.exigePerfil && !exigencias[to.meta.exigePerfil]) {
     return { name: 'inicio' }
